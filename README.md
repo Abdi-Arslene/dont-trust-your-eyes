@@ -7,8 +7,9 @@ Puzzle mobile (Android + iOS) : Pico doit sortir de la maison de Filou, un lutin
 - Mécaniques et progression : [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md)
 - Créer un niveau : [docs/LEVELS.md](docs/LEVELS.md)
 - Recommandations pour la suite (tests joueurs, store, monétisation…) : [docs/RECOMMANDATIONS.md](docs/RECOMMANDATIONS.md)
+- Publier sur Google Play (build signé, fiche, questionnaires) : [docs/PLAY_STORE.md](docs/PLAY_STORE.md) · confidentialité : [docs/PRIVACY.md](docs/PRIVACY.md)
 
-Moteur : **Godot 4.5** (GDScript), renderer *Compatibility* (OpenGL ES 3, le plus compatible en 2D mobile). **Un seul asset** : la police Fredoka (licence OFL, `assets/fonts/`). Tout le reste est dessiné en code, sons et musique synthétisés au démarrage.
+Moteur : **Godot 4.5** (GDScript), renderer *Compatibility* (OpenGL ES 3, le plus compatible en 2D mobile). **Un seul asset** : la police Fredoka (licence OFL, `assets/fonts/`). Les icônes (`assets/icon/`) sont générées par `tools/store_art.gd`. Tout le reste est dessiné en code, sons et musique synthétisés au démarrage.
 
 ## Structure
 
@@ -35,6 +36,10 @@ src/
 tests/
   run_tests.gd           règles + chaque niveau faisable, par/secret du JSON vérifiés
   smoke_test.gd          joue les 22 niveaux via la vraie interface, l'ampoule, le défi du jour, une partie de rêves, les costumes
+tools/
+  export_release.ps1     build signé pour le Play Store (.aab)
+  store_art.gd           dessine les icônes et la bannière du store avec le code du jeu
+docs/store/              icône 512, bannière, captures pour la fiche Play Store
 ```
 
 Principe : `Board` ne connaît ni l'écran ni le doigt. Tout le reste lit `Board` et lui envoie des actions.
@@ -59,7 +64,7 @@ Après avoir modifié un niveau, `run_tests` dit si son `par` (objectif) ou son 
 ## Exporter
 
 **Android** (depuis Windows) — preset prêt dans [export_presets.cfg](export_presets.cfg).
-1. Prérequis : JDK 17, SDK Android (platform-tools, build-tools 35, platform 35), modèles d'export Godot 4.5.1.
+1. Prérequis : JDK 17, SDK Android (platform-tools, build-tools 35 et 36, platforms 35 et 36), modèles d'export Godot 4.5.1.
 2. **Éditeur → Paramètres de l'éditeur → Export → Android** : chemins du SDK et du JDK.
 3. APK de test :
    ```sh
@@ -68,6 +73,6 @@ Après avoir modifié un niveau, `run_tests` dit si son `par` (objectif) ou son 
    ```
    L'export Godot relance le serveur adb : si `adb` dit « device offline », faire `adb kill-server && adb start-server`.
 4. Émulateur : lancer avec `-gpu host` (le GPU logiciel par défaut ne compile pas les shaders de Godot → écran noir).
-5. Play Store : clé de release (`keytool`) dans le preset, *Gradle build* activé, export `.aab`, arm64 uniquement.
+5. Play Store : `powershell -ExecutionPolicy Bypass -File tools/export_release.ps1` → `build/dont-trust-your-eyes.aab` (préréglage « Android Play » : Gradle, API 36, signé avec la clé d'envoi gardée hors du dépôt). Tout est dans [docs/PLAY_STORE.md](docs/PLAY_STORE.md).
 
 **iOS** (Mac obligatoire, imposé par Apple) : Xcode + compte Apple Developer, preset iOS avec *Team ID* et identifiant, puis archive Xcode.
