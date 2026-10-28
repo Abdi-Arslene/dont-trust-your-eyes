@@ -1,0 +1,15 @@
+# Godot
+.godot/
+/android/
+*.tmp
+
+# Exports
+/build/
+*.apk
+*.aab
+*.ipa
+
+# Secrets (keystores, export credentials)
+*.keystore
+*.jks
+export_credentials.cfg

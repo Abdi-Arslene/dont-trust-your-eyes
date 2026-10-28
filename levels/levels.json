@@ -1,0 +1,660 @@
+[
+  {
+    "id": "door",
+    "chapter": "I. Les fausses portes",
+    "title": "Une porte",
+    "par": 30,
+    "hints": [
+      "Suis le couloir jusqu'à la porte jaune.",
+      "Garde ton doigt appuyé après avoir glissé : tu avances tout seul !"
+    ],
+    "say": {
+      "start": "Hi hi ! Je suis Filou. Glisse ton doigt pour marcher jusqu'à la porte !",
+      "fake_wall": "~Hé ! Tu n'as rien vu !",
+      "win": "Grrr... C'était trop facile. La suite sera plus dure !"
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@......#",
+        "#X#####.#",
+        "#.......#",
+        "#.#######",
+        "#.......#",
+        "#######.#",
+        "#D......#",
+        "#########"
+      ]
+    },
+    "secret": true
+  },
+  {
+    "id": "right_there",
+    "chapter": "I. Les fausses portes",
+    "title": "Juste là",
+    "par": 12,
+    "hints": [
+      "Une porte peut être juste un dessin sur le mur !",
+      "La vraie sortie est en bas, au milieu."
+    ],
+    "say": {
+      "start": "~La porte est juste au-dessus de toi. Vas-y !",
+      "painted_door": "Hi hi hi ! C'était un dessin !",
+      "win": "Grrr... Bon, d'accord, je mens parfois."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "####d####",
+        "#...@...#",
+        "#.#####.#",
+        "#.#.D.#.#",
+        "#.#.#.#.#",
+        "#...#...#",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "chalk",
+    "chapter": "I. Les fausses portes",
+    "title": "Craie",
+    "par": 7,
+    "hints": [
+      "Regarde bien les murs : il y a un dessin à la craie.",
+      "Le dessin blanc, à gauche. Touche-le !"
+    ],
+    "say": {
+      "start": "~La vraie porte, c'est la jaune !",
+      "painted_door": "Hi hi ! Encore un dessin !",
+      "chalk_open": "Oh non ! Ton dessin devient une vraie porte !",
+      "win": "Grrr... Tu dessines mieux que moi."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#...d...#",
+        "c.......#",
+        "#.#####.#",
+        "#...@...#",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "red",
+    "chapter": "II. Les flaques de couleur",
+    "title": "Rouge",
+    "par": 13,
+    "hints": [
+      "Il faut passer sur la flaque rouge : il n'y a pas d'autre chemin.",
+      "Quand l'écran est rouge, tout est à l'envers : glisse dans l'autre sens !"
+    ],
+    "say": {
+      "start": "~Les flaques rouges sont dangereuses. Ne marche pas dedans !",
+      "tint": "~Rien n'a changé. Promis !",
+      "fall": "Plouf ! Hi hi ! En rouge, tout est à l'envers !",
+      "win": "Grrr... Tu as compris le rouge."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@.r.._##",
+        "#____.__#",
+        "#_...._##",
+        "#_.____##",
+        "#_..D__##",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "blue",
+    "chapter": "II. Les flaques de couleur",
+    "title": "Bleu",
+    "par": 14,
+    "hints": [
+      "En bleu, tout tourne : glisser vers le haut fait aller à droite.",
+      "La flaque blanche remet tout à l'endroit."
+    ],
+    "say": {
+      "start": "~Pas de rouge ici. Tout est normal !",
+      "tint": "Le bleu fait tourner tes glissements !",
+      "win": "Grrr... Le blanc t'a sauvé."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@b....##",
+        "#_____.##",
+        "#.____.##",
+        "#.w....##",
+        "#D#######"
+      ]
+    }
+  },
+  {
+    "id": "rainbow",
+    "chapter": "II. Les flaques de couleur",
+    "title": "Arc-en-ciel",
+    "par": 14,
+    "hints": [
+      "Avance une case à la fois. Regarde la couleur de l'écran avant de glisser.",
+      "Rouge : à l'envers. Bleu : haut = droite, droite = bas."
+    ],
+    "say": {
+      "start": "Trois couleurs, trois règles. Bonne chance ! Hi hi !",
+      "fall": "Plouf ! Quelle couleur avait l'écran ?",
+      "win": "Grrr... Tu es un champion des couleurs."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@r..___#",
+        "#___.___#",
+        "#_.b.___#",
+        "#_.____##",
+        "#_.w...D#",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "stairs",
+    "chapter": "III. Les escaliers farceurs",
+    "title": "Escalier",
+    "par": 12,
+    "hints": [
+      "Un escalier ne se traverse que dans le sens de ses flèches.",
+      "Il tourne quand tu ne le regardes pas. Cogne le mur pour attendre."
+    ],
+    "say": {
+      "start": "~Mes escaliers ne bougent jamais.",
+      "arrow_blocked": [
+        "Pas dans ce sens ! Hi hi !",
+        "Et si tu regardais ailleurs ?"
+      ],
+      "win": "Grrr... Ils tournent quand on ne les regarde pas."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@......#",
+        "######>##",
+        "#D......#",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "dont_blink",
+    "chapter": "III. Les escaliers farceurs",
+    "title": "Ne cligne pas",
+    "par": 13,
+    "hints": [
+      "Ce que tu regardes ne tourne pas. Le reste tourne.",
+      "Se cogner contre un mur, c'est une façon d'attendre."
+    ],
+    "say": {
+      "start": "Deux escaliers. Ne les quitte pas des yeux !",
+      "arrow_blocked": [
+        "Pas dans ce sens !",
+        "Regarde-le pour qu'il arrête de tourner."
+      ],
+      "win": "Grrr... Tu as de bons yeux."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@.....##",
+        "#####v###",
+        "#...<...#",
+        "#D###...#",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "top_bar",
+    "chapter": "IV. Le sac à malices",
+    "title": "Le sac",
+    "items": [
+      "plank"
+    ],
+    "par": 7,
+    "hints": [
+      "Ce qu'il y a en haut de l'écran, c'est ton sac !",
+      "Fais glisser la planche du haut de l'écran jusqu'au trou."
+    ],
+    "say": {
+      "start": "~Il n'y a rien en haut de l'écran.",
+      "fall": "Plouf ! Il manquait un pont. Regarde en haut !",
+      "drop": "Tout ce qui est à l'écran fait partie du jeu !",
+      "win": "Grrr... Tu as trouvé mon sac à malices."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@.._..D#",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "key",
+    "chapter": "IV. Le sac à malices",
+    "title": "Clé",
+    "items": [
+      "plank",
+      "key"
+    ],
+    "par": 10,
+    "hints": [
+      "Regarde ce que tu as en haut de l'écran.",
+      "La planche va dans le trou, la clé sur la porte grise."
+    ],
+    "say": {
+      "start": "~Tu n'as pas de clé.",
+      "locked": "~Fermée ! Dommage, tu n'as pas de clé. Hi hi !",
+      "painted_door": "Hi hi ! Celle-là n'a même pas de serrure !",
+      "fake_wall": "~Ce passage n'existe pas !",
+      "win": "Grrr... Tu avais une clé depuis le début."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@...d..#",
+        "#.##X####",
+        "#.._...L#",
+        "#########"
+      ]
+    },
+    "secret": true
+  },
+  {
+    "id": "right_gap",
+    "chapter": "IV. Le sac à malices",
+    "title": "Le bon trou",
+    "items": [
+      "plank"
+    ],
+    "par": 10,
+    "hints": [
+      "Une seule planche, deux trous. Réfléchis avant de la poser !",
+      "La porte jaune est un dessin. La sortie est le dessin blanc, en bas à droite."
+    ],
+    "say": {
+      "start": "~Une seule planche. La porte jaune t'attend !",
+      "painted_door": "Hi hi hi ! Tu aurais dû t'en douter !",
+      "win": "Grrr... Tu ne crois plus mes portes jaunes."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#...._.d#",
+        "#@#######",
+        "#...._..c",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "hut",
+    "chapter": "V. Les maisons magiques",
+    "title": "Petite maison",
+    "par": 40,
+    "hints": [
+      "Entre dans la petite maison.",
+      "L'intérieur est un labyrinthe. Sa sortie mène de l'autre côté du mur."
+    ],
+    "say": {
+      "start": "~Ce n'est qu'une toute petite maison.",
+      "portal": [
+        "Surprise ! Elle est immense dedans !",
+        "Te revoilà dehors !"
+      ],
+      "fake_wall": "~Tu n'as pas fait ça !",
+      "win": "Grrr... Plus grande dedans que dehors. Magique !"
+    },
+    "rooms": {
+      "outside": [
+        "#########",
+        "#@..#...#",
+        "#.1.#.2.#",
+        "#...X..D#",
+        "#########"
+      ],
+      "inside": [
+        "#########",
+        "#1..#...#",
+        "###.#.#.#",
+        "#...#.#.#",
+        "#.###.#.#",
+        "#.#...#.#",
+        "#.#.###.#",
+        "#...#...#",
+        "#####.###",
+        "#2....###",
+        "#########"
+      ]
+    },
+    "secret": true
+  },
+  {
+    "id": "nesting",
+    "chapter": "V. Les maisons magiques",
+    "title": "Poupées russes",
+    "par": 40,
+    "hints": [
+      "Chaque maison mène à une pièce plus grande, avec une autre maison dedans.",
+      "La couleur rouge te suit d'une pièce à l'autre."
+    ],
+    "say": {
+      "start": "Chaque maison est plus grande que la précédente. Hi hi !",
+      "portal": [
+        "Plus grand !",
+        "Encore plus grand !",
+        "Et te revoilà tout petit !"
+      ],
+      "win": "Grrr... Tu ne t'es pas perdu."
+    },
+    "rooms": {
+      "outside": [
+        "#########",
+        "#@.1#3.D#",
+        "#########"
+      ],
+      "middle": [
+        "#######",
+        "#1....#",
+        "#.###.#",
+        "#...#2#",
+        "#######"
+      ],
+      "big": [
+        "#########",
+        "#2......#",
+        "#######.#",
+        "#.......#",
+        "#.#######",
+        "#..r....#",
+        "#######.#",
+        "#3......#",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "everything",
+    "chapter": "V. Les maisons magiques",
+    "title": "Tout à la fois",
+    "items": [
+      "plank"
+    ],
+    "par": 13,
+    "hints": [
+      "Rouge d'abord : tout est à l'envers jusqu'à la fin.",
+      "Pose la planche, puis regarde l'escalier pour qu'il arrête de tourner."
+    ],
+    "say": {
+      "start": "Rouge, escalier, trou... Tout à la fois !",
+      "tint": "À l'envers ! Hi hi !",
+      "win": "~Bravo. Tu connais toutes mes farces."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@.r...##",
+        "#####.###",
+        "#..>_.###",
+        "#.#######",
+        "#D#######",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "crossed",
+    "chapter": "V. Les maisons magiques",
+    "title": "Le balcon",
+    "par": 22,
+    "hints": [
+      "Les deux escaliers tournent ensemble. Pour les décaler, regarde-en un seul.",
+      "Le balcon donne sur un seul escalier. Monte là-haut pour le figer un instant."
+    ],
+    "say": {
+      "start": "Mon casse-tête préféré ! Deux escaliers toujours en désordre.",
+      "arrow_blocked": [
+        "Pas dans ce sens !",
+        "Regarde-en un. Pas l'autre."
+      ],
+      "fall": "Plouf ! Il n'y a pas de barrière, hi hi !",
+      "win": "Grrr... Personne n'avait jamais réussi !"
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#...#####",
+        "#.#.#####",
+        "#.__#####",
+        "#@><...D#",
+        "##__#####",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "dark",
+    "chapter": "VI. Dans le noir",
+    "title": "Lampe de poche",
+    "dark": true,
+    "par": 30,
+    "hints": [
+      "Tes yeux éclairent droit devant toi : regarde avant d'avancer.",
+      "Longe le bord droit, puis le bas."
+    ],
+    "say": {
+      "start": "J'ai éteint la lumière ! Tes yeux éclairent devant toi.",
+      "fake_wall": "~Personne ne t'a vu !",
+      "fall": "Plouf ! Tu ne l'avais pas vu venir !",
+      "win": "Grrr... Tu n'as pas peur du noir."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@..#...#",
+        "###.#.#.#",
+        "#...#.#.#",
+        "#.###.#.#",
+        "#.....#.#",
+        "#X#####.#",
+        "#D......#",
+        "#########"
+      ]
+    },
+    "secret": true
+  },
+  {
+    "id": "memories",
+    "chapter": "VI. Dans le noir",
+    "title": "Souvenirs",
+    "dark": true,
+    "par": 20,
+    "hints": [
+      "Ce que tu as déjà vu reste en pâle. Mais ça a pu changer !",
+      "Les escaliers tournent même dans le noir. Regarde-les avant de passer."
+    ],
+    "say": {
+      "start": "~Ce que tu as vu ne change jamais.",
+      "arrow_blocked": [
+        "Hi hi ! Ton souvenir était faux !",
+        "Regarde-le pour de vrai."
+      ],
+      "win": "Grrr... Même tes souvenirs ne t'ont pas eu."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@......#",
+        "#######>#",
+        "#.<.....#",
+        "#.#######",
+        "#D#######",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "dark_doors",
+    "chapter": "VI. Dans le noir",
+    "title": "Portes closes",
+    "dark": true,
+    "par": 6,
+    "hints": [
+      "Les portes jaunes sont toutes des dessins.",
+      "Cherche un dessin à la craie, en bas."
+    ],
+    "say": {
+      "start": "~Ici, toutes les portes jaunes sont des dessins.",
+      "painted_door": [
+        "Dessinée ! Hi hi !",
+        "Dessinée aussi !",
+        "Toutes dessinées... comme j'ai dit !"
+      ],
+      "chalk_open": "Oh non ! Tu as trouvé la vraie !",
+      "win": "Grrr... Mon nez a grandi, mais je disais vrai ! Méfie-toi même de mon nez."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#...d...#",
+        "#.#.#.#.#",
+        "d...@...d",
+        "#.#.#.#.#",
+        "#._.....#",
+        "######c##"
+      ]
+    }
+  },
+  {
+    "id": "no_door",
+    "chapter": "VII. Le grand secret",
+    "title": "Pas de porte",
+    "reveals_walls": true,
+    "par": 13,
+    "hints": [
+      "As-tu essayé tous les murs ?",
+      "Le tout premier niveau... Juste sous ton point de départ..."
+    ],
+    "say": {
+      "start": "Hi hi ! Pas de porte ici. Et les murs, eux, ne mentent jamais.",
+      "bump": [
+        "Non.",
+        "Toujours un mur !",
+        "Tu te souviens du tout premier niveau ?",
+        "Juste sous ton point de départ..."
+      ],
+      "fake_wall": "Oh non ! Tu as trouvé mon passage secret !",
+      "win": "Grrr... Maintenant, tu vois les fissures. Retourne dans les anciens niveaux !"
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@..#...#",
+        "#X###.#.#",
+        "#.....#.#",
+        "#######D#"
+      ]
+    }
+  },
+  {
+    "id": "cracks",
+    "chapter": "VII. Le grand secret",
+    "title": "Fissures",
+    "par": 9,
+    "hints": [
+      "Toutes les fissures ne sont pas des passages.",
+      "Essaie la fissure du bas."
+    ],
+    "say": {
+      "start": "Tu vois les fissures, maintenant. Ce sont toutes des passages !",
+      "cracked": [
+        "Hi hi ! Solide !",
+        "Celui-là aussi !",
+        "Tu me crois encore ?"
+      ],
+      "win": "Grrr... Une fissure, ça ne prouve rien."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@..x.D.#",
+        "#...x...#",
+        "#...X...#",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "back_wall",
+    "chapter": "VII. Le grand secret",
+    "title": "Le mur du fond",
+    "dark": true,
+    "par": 8,
+    "hints": [
+      "La porte est sous le labyrinthe, derrière le mur du bas.",
+      "Cherche la fissure en bas à gauche."
+    ],
+    "say": {
+      "start": "~Tu peux croire tout ce que tu vois.",
+      "cracked": "Hi hi ! Pas celle-là !",
+      "win": "Grrr... Plus qu'une seule porte."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@......#",
+        "#.#####.#",
+        "#.#...#.#",
+        "#.#.#.#.#",
+        "#...#...#",
+        "##X###x##",
+        "#D......#",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "last_rule",
+    "chapter": "VII. Le grand secret",
+    "title": "La dernière farce",
+    "items": [
+      "plank"
+    ],
+    "par": 22,
+    "hints": [
+      "Le rouge te suit dans la maison, jusqu'à la flaque blanche.",
+      "Regarde l'escalier pour l'arrêter, pose la planche, et touche le dessin à gauche."
+    ],
+    "say": {
+      "start": "Ma dernière porte ! Tu ne passeras pas !",
+      "painted_door": "~Celle-là, c'était trop facile.",
+      "chalk_open": "Oh non ! Tu as trouvé la dernière !",
+      "win": "Grrr... Tu as gagné. Pour cette fois !"
+    },
+    "rooms": {
+      "outside": [
+        "#########",
+        "#@..r.1##",
+        "#########"
+      ],
+      "inside": [
+        "#########",
+        "#1.w...>#",
+        "#######.#",
+        "c._.....d",
+        "#########"
+      ]
+    }
+  }
+]
