@@ -11,7 +11,8 @@ powershell -ExecutionPolicy Bypass -File tools/export_release.ps1
 Le script produit `build/dont-trust-your-eyes.aab` : le préréglage « Android Play », avec compilation Gradle, cible API 36 (Android 16, exigée par Google Play depuis le 31 août 2026), les architectures arm 32/64 bits et x86_64, et les icônes adaptatives.
 
 - **Clé d'envoi (upload key)** : `%USERPROFILE%\dtye-signing\upload.jks`. Le mot de passe est dans `signing.env`, dans le même dossier. **Ce dossier ne va jamais dans Git.** Sauvegarde-le (gestionnaire de mots de passe + clé USB). Avec la signature d'application Play (activée par défaut), Google garde la vraie clé de l'app. Si la clé d'envoi est perdue, on peut la faire réinitialiser depuis la Play Console, mais cela prend quelques jours.
-- **Nouvelle version** : avant chaque nouvel envoi, augmente `version/code` (1, 2, 3…) et `version/name` dans `export_presets.cfg`, dans les deux préréglages.
+- **Nouvelle version** : avant chaque nouvel envoi, augmente `version/code` (1, 2, 3…) et `version/name` dans `export_presets.cfg`, dans les trois préréglages.
+- **APK à partager** (hors Play Store, vrais téléphones uniquement) : `powershell -ExecutionPolicy Bypass -File tools/export_release.ps1 -Preset "Android APK" -Output build/DontTrustYourEyes.apk`
 - **Identifiant de l'app** : `com.donttrustyoureyes.game`. Il ne pourra **plus jamais changer** après le premier envoi.
 - **Modèle Gradle** : le dossier `android/` est généré par le script (option `--install-android-build-template`). Il n'est pas versionné.
 - **Images** : `tools/store_art.gd` redessine les icônes et la bannière avec le code du jeu :
