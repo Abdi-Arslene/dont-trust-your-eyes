@@ -16,13 +16,19 @@ const DEFAULT_SAY := {
 	"fake_wall": "~Hé ! Tu n'as rien vu !",
 	"cracked": "Hi hi ! Celui-là est solide !",
 	"arrow_blocked": "Pas dans ce sens !",
+	"crate_blocked": "Trop lourd ! Hi hi !",
+	"crate_fill": "La caisse bouche le trou !",
+	"gate_closed": "Hi hi ! La grille est fermée !",
+	"crumble": "Crac ! Le sol s'est effondré derrière toi ! Hi hi !",
+	"stuck": "Hi hi hi ! Tu es coincé pour toujours ! Il ne te reste plus qu'à sauter dans le trou...",
 	"fall": "Plouf ! On recommence !",
 	"win": "Grrr... Tu as trouvé la sortie !",
 }
 ## How Filou reacts: he laughs when you fall for a trick, sulks when you win.
 const FILOU_MOODS := {
 	"painted_door": "laugh", "fall": "laugh", "cracked": "laugh", "arrow_blocked": "laugh", "locked": "laugh",
-	"fake_wall": "surprised", "chalk_open": "surprised", "win": "grumpy",
+	"crate_blocked": "laugh", "gate_closed": "laugh", "crumble": "laugh",
+	"fake_wall": "surprised", "chalk_open": "surprised", "gates_open": "surprised", "win": "grumpy",
 }
 const CHEERS := ["Bravo !", "Génial !", "Super !", "Trop fort !", "Bien joué !"]
 const C_HINT_TEXT := Color("1d6fd8")
@@ -30,9 +36,15 @@ const TINTS := {"white": Color(1, 1, 1, 0), "red": Color(1, 0.1, 0.15, 0.22), "b
 const SOUNDS := {
 	"step": "step", "bump": "bump", "cracked": "cracked", "arrow_blocked": "blocked", "painted_door": "lie",
 	"locked": "bump", "chalk_open": "chalk", "fake_wall": "secret", "tint": "tint", "portal": "portal",
-	"fall": "fall", "win": "win",
+	"fall": "fall", "win": "win", "slide": "slide", "push": "push", "crate_fill": "drop", "crate_blocked": "bump",
+	"gate_closed": "blocked", "gates_open": "gate", "gates_shut": "gate_shut",
+	"pickup": "pickup", "drop": "drop", "unlock": "unlock", "crumble": "crumble", "toggle": "gate", "block": "bump",
 }
-const VIBRATIONS := {"bump": 12, "cracked": 12, "painted_door": 40, "locked": 12, "arrow_blocked": 12, "chalk_open": 30, "fall": 120, "win": 60}
+const VIBRATIONS := {
+	"bump": 12, "cracked": 12, "painted_door": 40, "locked": 12, "arrow_blocked": 12, "chalk_open": 30, "fall": 120, "win": 60,
+	"push": 15, "crate_fill": 30, "crate_blocked": 12, "gate_closed": 12, "gates_open": 20,
+	"pickup": 20, "drop": 25, "unlock": 25, "crumble": 40, "toggle": 25, "block": 12,
+}
 const NARRATOR_HEIGHT := 240.0
 const FAILS_BEFORE_HELP := 3
 
@@ -42,9 +54,13 @@ var _mode := "story"
 var _run: DreamRun
 var _board: Board
 var _moves := 0
+var _pushes := 0  # crates pushed in this try, counted for the collection when the level is won
 var _hinted := false  # the eye showed a move: stars capped at 2
 var _hint_step := 0  # how many written hints were read (kept across restarts)
 var _hint_task := -1
+var _stuck_task := -1  # after the floor fell in: is the door still reachable?
+var _stuck := false
+var _tries := 0  # restarts so far: a late answer about an old try is ignored
 var _hint_result := ""
 var _fails := 0
 var _offered_help := false
@@ -84,8 +100,6 @@ func _ready() -> void:
 	add_child(_view)
 
 	_swipe.swiped.connect(_on_swipe)
-	_swipe.can_drop = _can_drop
-	_swipe.item_dropped.connect(_on_item_dropped)
 	add_child(_swipe)
 
 	_bar.set_anchors_and_offsets_preset(PRESET_TOP_WIDE)
@@ -148,10 +162,19 @@ func _ready() -> void:
 func _exit_tree() -> void:
 	if _hint_task != -1:
 		WorkerThreadPool.wait_for_task_completion(_hint_task)
+	if _stuck_task != -1:
+		WorkerThreadPool.wait_for_task_completion(_stuck_task)
 
 
 func _process(_delta: float) -> void:
 	_filou.talking = _narrator.is_typing()
+	if _stuck_task != -1 and WorkerThreadPool.is_task_completed(_stuck_task):
+		WorkerThreadPool.wait_for_task_completion(_stuck_task)
+		_stuck_task = -1
+		if _stuck and not (_board.won or _board.lost):
+			_filou.set_mood("laugh", 2.0)
+			Sfx.play("giggle")
+			_say("stuck")
 	if _hint_task != -1 and WorkerThreadPool.is_task_completed(_hint_task):
 		WorkerThreadPool.wait_for_task_completion(_hint_task)
 		_hint_task = -1
@@ -186,10 +209,13 @@ func _restart() -> void:
 	if _fall_tween:
 		_fall_tween.kill()
 	_board = Board.from_level(_level)
+	_tries += 1
+	_stuck = false
 	_view.board = _board
 	_view.show_fakes = Save.walls_revealed
 	_view.reset()
 	_moves = 0
+	_pushes = 0
 	_hinted = false
 	_win.hide()
 	_bar.set_items(_board.items)
@@ -251,10 +277,13 @@ func _on_swipe(dir: Vector2i) -> void:
 	var stairs_before := _board.stairs_signature()
 	var events := _board.move(dir)
 	_pay(1)
+	var reacted := {}
 	for event in events:
-		_react(event)
-	if not "step" in events or "tint" in events or "portal" in events:
-		_swipe.stop_hold()  # holding the finger walks on, but never into a wall or a new colour
+		if not reacted.has(event):  # a long slide is one sound, not one per cell
+			reacted[event] = true
+			_react(event)
+	if not "step" in events or "tint" in events or "portal" in events or "push" in events or "slide" in events or "toggle" in events:
+		_swipe.stop_hold()  # holding the finger walks on, but never into a wall, a crate, ice or a new colour
 	if _board.stairs_signature() != stairs_before:
 		Sfx.play("turn", randf_range(0.9, 1.1))
 	_bar.set_moves(_moves, Levels.goal(_level))
@@ -264,10 +293,30 @@ func _react(event: String) -> void:
 	match event:
 		"step":
 			_view.step()
-		"bump", "cracked", "painted_door", "locked", "arrow_blocked":
+		"bump", "cracked", "painted_door", "locked", "arrow_blocked", "crate_blocked", "gate_closed", "block":
 			_view.nudge(_board.facing)
 			if event == "painted_door":
 				Save.count("painted")
+		"slide":
+			_view.burst(_board.pos, Color(1, 1, 1, 0.9), 10, 1.2)
+		"toggle":
+			_view.burst(_board.pos, BoardView.C_BLOCKS.y if _board.switched else BoardView.C_BLOCKS.u, 18, 1.4)
+		"crumble":
+			if _board.crumbled.x >= 0:
+				_view.burst(_board.crumbled, _theme.floor[1].darkened(0.3), 22, 1.0)
+			_check_stuck()
+		"pickup":
+			_view.burst(_board.pos, Look.GOLD, 16, 1.2)
+			_bar.set_items(_board.items)
+		"drop", "unlock":
+			var spot := _board.pos + _board.facing
+			_view.burst(spot, BoardView.C_PLANK if event == "drop" else BoardView.C_DOOR, 20, 1.2)
+			_bar.set_items(_board.items)
+		"push", "crate_fill":
+			_view.crate_moved(_board.last_push[0], _board.last_push[1], event == "crate_fill")
+			_pushes += 1
+			if event == "crate_fill":
+				_view.burst(_board.last_push[1], BoardView.C_CRATE, 18, 1.2)
 		"chalk_open":
 			_view.burst(_board.pos + _board.facing, Color.WHITE, 26, 1.5)
 		"fake_wall":
@@ -302,6 +351,8 @@ func _react(event: String) -> void:
 
 
 func _finish() -> void:
+	if _pushes > 0:
+		Save.count("pushes", _pushes)
 	var stars := Levels.stars(_level, _moves, _hinted)
 	var info := "%d pas · objectif %d" % [_moves, Levels.goal(_level)]
 	var cheer: String = CHEERS[randi() % CHEERS.size()]
@@ -321,7 +372,7 @@ func _finish() -> void:
 				notes.append("L'ampoule t'a aidé : 2 étoiles maximum.")
 			elif stars < 3:
 				notes.append("Fais l'objectif pour avoir 3 étoiles !")
-			var last := _index + 1 >= Levels.all().size()
+			var last := _index + 1 >= Levels.all().size() or _index == Levels.story_end()
 			t.tween_callback(_win.open.bind(cheer, stars, info, notes, "Rejouer", "Fin" if last else "Suivant"))
 		"daily":
 			Save.record_daily(stars)
@@ -345,6 +396,17 @@ func _finish() -> void:
 			if _run.energy > DreamRun.CARRY_MAX:
 				notes.append("Tu en gardes %d pour la suite." % DreamRun.CARRY_MAX)
 			t.tween_callback(_win.open.bind(cheer, stars, info, notes, "Menu", "Niveau suivant"))
+
+
+## The floor fell in behind Pico: if the door can no longer be reached, Filou says so
+## (worked out on a thread; the answer is dropped if the level restarted meanwhile).
+func _check_stuck() -> void:
+	if _stuck_task != -1 or _board.won or _board.lost:
+		return
+	var snapshot := _board.clone()
+	var tries := _tries
+	_stuck = false
+	_stuck_task = WorkerThreadPool.add_task(func(): _stuck = tries == _tries and Solver.solve(snapshot, [], 50000) == null)
 
 
 ## Dreams: a fall or a restart costs a life. Survival: a fall costs energy.
@@ -437,25 +499,6 @@ func _on_win_right() -> void:
 		next_requested.emit()
 
 
-func _can_drop(item: String, global_point: Vector2) -> bool:
-	return not _board.won and not _board.lost and _board.can_drop(item, _view.cell_at(global_point))
-
-
-func _on_item_dropped(item: String, global_point: Vector2) -> void:
-	var cell := _view.cell_at(global_point)
-	if not _board.drop(item, cell):
-		return
-	_clear_hints()
-	_moves += 1
-	_pay(1)
-	_bar.set_moves(_moves, Levels.goal(_level))
-	_bar.set_items(_board.items)
-	_view.burst(cell, BoardView.C_PLANK if item == "plank" else BoardView.C_DOOR, 20, 1.2)
-	Sfx.play("unlock" if item == "key" else "drop")
-	Sfx.vibrate(25)
-	_say("drop")
-
-
 # --- Help: written hints first, then the eye shows the next move -----------
 
 func _on_hint() -> void:
@@ -481,19 +524,12 @@ func _show_path_hint(action: String) -> void:
 	if action == "":
 		_tell("Oups, c'est bloqué. Recommence !", true)
 		return
-	if Solver.is_drop(action):
-		var drop := Solver.parse_drop(action)
-		_view.show_hint_cell(drop[1])
-		_bar.highlight_item(drop[0])
-		_tell("Glisse cet objet sur la case rose !", true)
-	else:
-		_view.show_hint_swipe(Solver.DIRS[action])
-		_tell("Glisse dans le sens de la flèche. Touche encore l'ampoule pour la suite !", true)
+	_view.show_hint_swipe(Solver.DIRS[action])
+	_tell("Glisse dans le sens de la flèche. Touche encore l'ampoule pour la suite !", true)
 
 
 func _clear_hints() -> void:
 	_view.clear_hint()
-	_bar.clear_highlights()
 
 
 ## A level line can be a string or a list (shown in order, the last one repeats).

@@ -15,6 +15,8 @@ const ALL := [
 	{"id": "king", "name": "Roi", "goal": "Finir l'histoire", "stat": "story", "need": 1, "body": Color("e63946"), "hat": "crown"},
 	{"id": "flower", "name": "Tournesol", "goal": "Défi du jour 7 jours de suite", "stat": "streak", "need": 7, "body": Color("7ed957"), "hat": "flower"},
 	{"id": "ninja", "name": "Ninja", "goal": "20 rêves d'affilée", "stat": "dreams", "need": 20, "body": Color("33334d"), "hat": "headband"},
+	{"id": "mover", "name": "Déménageur", "goal": "Pousser 40 caisses", "stat": "pushes", "need": 40, "body": Color("e0a96d"), "hat": "hardhat"},
+	{"id": "eskimo", "name": "Esquimau", "goal": "Finir la revanche de Filou", "stat": "revenge", "need": 1, "body": Color("bde0fe"), "hat": "earmuffs"},
 	{"id": "rainbow", "name": "Arc-en-ciel", "goal": "Toutes les étoiles", "stat": "all_stars", "need": 1, "body": Color("ffffff"), "hat": "star"},
 ]
 const C_INK := Color("2b2d42")
@@ -147,6 +149,18 @@ static func _draw_hat(ci: CanvasItem, c: Vector2, s: float, hat: String, t: floa
 			ci.draw_line(c + Vector2(s * 0.85, -s * 0.4), c + Vector2(s * 1.2, -s * 0.2 + sin(t * 5.0) * s * 0.08), a.call(Color("e63946")), s * 0.1, true)
 		"star":
 			star(ci, top + Vector2(0, -s * 0.18), s * 0.24, a.call(Look.GOLD))
+		"hardhat":
+			var dome := PackedVector2Array()
+			for k in 17:
+				dome.append(top + Vector2(0, s * 0.2) + Vector2.from_angle(PI + PI * k / 16.0) * Vector2(s * 0.58, s * 0.5))
+			ci.draw_colored_polygon(dome, a.call(Color("ffb703")))
+			ci.draw_rect(Rect2(top + Vector2(-s * 0.72, s * 0.12), Vector2(s * 1.44, s * 0.14)), a.call(Color("fb8500")))
+			ci.draw_rect(Rect2(top + Vector2(-s * 0.06, -s * 0.28), Vector2(s * 0.12, s * 0.44)), a.call(Color("fb8500")))
+		"earmuffs":
+			ci.draw_arc(c + Vector2(0, -s * 0.1), s * 0.95, PI * 1.08, PI * 1.92, 20, a.call(Color("8d99ae")), s * 0.1, true)
+			for side in [-1, 1]:
+				ci.draw_circle(c + Vector2(side * s * 0.92, -s * 0.05), s * 0.24, a.call(Color("ff8fab")), true, -1.0, true)
+				ci.draw_circle(c + Vector2(side * s * 0.88, -s * 0.12), s * 0.08, a.call(Color(1, 1, 1, 0.6)), true, -1.0, true)
 
 
 ## A five-pointed star (hats, win card).

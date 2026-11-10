@@ -218,24 +218,24 @@
     "id": "top_bar",
     "chapter": "IV. Le sac à malices",
     "title": "Le sac",
-    "items": [
-      "plank"
-    ],
-    "par": 7,
+    "par": 15,
     "hints": [
-      "Ce qu'il y a en haut de l'écran, c'est ton sac !",
-      "Fais glisser la planche du haut de l'écran jusqu'au trou."
+      "Une planche traîne quelque part. Marche dessus pour la ramasser !",
+      "Avec la planche dans ton sac, avance vers le trou : tu la poses."
     ],
     "say": {
-      "start": "~Il n'y a rien en haut de l'écran.",
-      "fall": "Plouf ! Il manquait un pont. Regarde en haut !",
-      "drop": "Tout ce qui est à l'écran fait partie du jeu !",
-      "win": "Grrr... Tu as trouvé mon sac à malices."
+      "start": "~Ce trou est bien trop grand. Tu ne passeras jamais !",
+      "pickup": "Hé ! Rends-moi ma planche !",
+      "drop": "Oh non ! Tu as fait un pont !",
+      "fall": "Plouf ! Il manquait un pont.",
+      "win": "Grrr... Tu as trouvé ma planche."
     },
     "rooms": {
       "main": [
         "#########",
         "#@.._..D#",
+        "#.#######",
+        "#..-#####",
         "#########"
       ]
     }
@@ -244,28 +244,29 @@
     "id": "key",
     "chapter": "IV. Le sac à malices",
     "title": "Clé",
-    "items": [
-      "plank",
-      "key"
-    ],
-    "par": 10,
+    "par": 16,
     "hints": [
-      "Regarde ce que tu as en haut de l'écran.",
-      "La planche va dans le trou, la clé sur la porte grise."
+      "La clé est posée près de la porte jaune. Et il y a aussi une planche...",
+      "Ramasse la clé et la planche, puis avance contre la porte grise."
     ],
     "say": {
       "start": "~Tu n'as pas de clé.",
-      "locked": "~Fermée ! Dommage, tu n'as pas de clé. Hi hi !",
+      "locked": "~Fermée ! Et il n'y a aucune clé ici. Hi hi !",
+      "pickup": [
+        "Hé ! C'est ma clé !",
+        "Et ma planche aussi !"
+      ],
       "painted_door": "Hi hi ! Celle-là n'a même pas de serrure !",
+      "unlock": "Grrr... Elle était à moi, cette clé !",
       "fake_wall": "~Ce passage n'existe pas !",
-      "win": "Grrr... Tu avais une clé depuis le début."
+      "win": "Grrr... Tu as trouvé ma clé."
     },
     "rooms": {
       "main": [
         "#########",
-        "#@...d..#",
+        "#@..kd..#",
         "#.##X####",
-        "#.._...L#",
+        "#-._...L#",
         "#########"
       ]
     },
@@ -275,10 +276,7 @@
     "id": "right_gap",
     "chapter": "IV. Le sac à malices",
     "title": "Le bon trou",
-    "items": [
-      "plank"
-    ],
-    "par": 10,
+    "par": 16,
     "hints": [
       "Une seule planche, deux trous. Réfléchis avant de la poser !",
       "La porte jaune est un dessin. La sortie est le dessin blanc, en bas à droite."
@@ -291,7 +289,7 @@
     "rooms": {
       "main": [
         "#########",
-        "#...._.d#",
+        "#..-._.d#",
         "#@#######",
         "#...._..c",
         "#########"
@@ -388,13 +386,10 @@
     "id": "everything",
     "chapter": "V. Les maisons magiques",
     "title": "Tout à la fois",
-    "items": [
-      "plank"
-    ],
-    "par": 13,
+    "par": 17,
     "hints": [
       "Rouge d'abord : tout est à l'envers jusqu'à la fin.",
-      "Pose la planche, puis regarde l'escalier pour qu'il arrête de tourner."
+      "Prends la planche au bout du couloir, pose-la sur le trou, puis regarde l'escalier pour qu'il arrête de tourner."
     ],
     "say": {
       "start": "Rouge, escalier, trou... Tout à la fois !",
@@ -404,7 +399,7 @@
     "rooms": {
       "main": [
         "#########",
-        "#@.r...##",
+        "#@.r..-##",
         "#####.###",
         "#..>_.###",
         "#.#######",
@@ -448,27 +443,37 @@
     "chapter": "VI. Dans le noir",
     "title": "Lampe de poche",
     "dark": true,
-    "par": 30,
+    "par": 27,
     "hints": [
-      "Tes yeux éclairent droit devant toi : regarde avant d'avancer.",
-      "Longe le bord droit, puis le bas."
+      "Tes yeux éclairent devant toi. Le sol fissuré s'effondre quand tu le quittes : réfléchis avant de passer dessus !",
+      "La porte est en bas à gauche. Le bon chemin fait des zigzags : à droite, en bas, à gauche, en bas..."
     ],
     "say": {
-      "start": "J'ai éteint la lumière ! Tes yeux éclairent devant toi.",
+      "start": "~Le sol est bien solide partout. Et j'éteins la lumière ! Hi hi !",
       "fake_wall": "~Personne ne t'a vu !",
       "fall": "Plouf ! Tu ne l'avais pas vu venir !",
-      "win": "Grrr... Tu n'as pas peur du noir."
+      "win": "Grrr... Tu n'as pas peur du noir.",
+      "crumble": [
+        "Crac ! Le sol s'effondre derrière toi ! Hi hi !",
+        "Encore un ! Plus de retour possible !",
+        ""
+      ],
+      "stuck": "Hi hi hi ! Coincé pour toujours ! Le seul moyen de sortir : sauter dans le trou !"
     },
     "rooms": {
       "main": [
         "#########",
         "#@..#...#",
-        "###.#.#.#",
-        "#...#.#.#",
-        "#.###.#.#",
+        "#X#.###f#",
+        "#.#.....#",
+        "#.#####.#",
+        "#...#...#",
+        "#f###.###",
         "#.....#.#",
-        "#X#####.#",
-        "#D......#",
+        "#.#####.#",
+        "#f..#...#",
+        "###f#.#.#",
+        "D...f.#.#",
         "#########"
       ]
     },
@@ -479,10 +484,10 @@
     "chapter": "VI. Dans le noir",
     "title": "Souvenirs",
     "dark": true,
-    "par": 20,
+    "par": 30,
     "hints": [
-      "Ce que tu as déjà vu reste en pâle. Mais ça a pu changer !",
-      "Les escaliers tournent même dans le noir. Regarde-les avant de passer."
+      "Ce que tu as vu reste en pâle. Mais les escaliers, eux, ont pu tourner !",
+      "Les deux escaliers sont l'un sous l'autre, en bas à gauche. Regarde-les pour qu'ils arrêtent de tourner."
     ],
     "say": {
       "start": "~Ce que tu as vu ne change jamais.",
@@ -490,16 +495,27 @@
         "Hi hi ! Ton souvenir était faux !",
         "Regarde-le pour de vrai."
       ],
-      "win": "Grrr... Même tes souvenirs ne t'ont pas eu."
+      "win": "Grrr... Même tes souvenirs ne t'ont pas eu.",
+      "crumble": [
+        "Crac ! Hi hi !",
+        ""
+      ],
+      "stuck": "Hi hi hi ! Tu t'es souvenu du mauvais chemin ! Saute dans le trou pour recommencer."
     },
     "rooms": {
       "main": [
         "#########",
-        "#@......#",
-        "#######>#",
-        "#.<.....#",
-        "#.#######",
-        "#D#######",
+        "#@.f#...#",
+        "###.###.#",
+        "#.#.#...#",
+        "#f#.#.#.#",
+        "#...#.#.#",
+        "#.###.###",
+        "#.#.....#",
+        "#.#####f#",
+        "#..<#.f.#",
+        "###<#.#.#",
+        "#.f...#.D",
         "#########"
       ]
     }
@@ -509,10 +525,10 @@
     "chapter": "VI. Dans le noir",
     "title": "Portes closes",
     "dark": true,
-    "par": 6,
+    "par": 30,
     "hints": [
-      "Les portes jaunes sont toutes des dessins.",
-      "Cherche un dessin à la craie, en bas."
+      "Les portes jaunes sont toutes des dessins. Chaque couloir peut finir en impasse !",
+      "Cherche un dessin à la craie, sur le mur de gauche."
     ],
     "say": {
       "start": "~Ici, toutes les portes jaunes sont des dessins.",
@@ -522,17 +538,28 @@
         "Toutes dessinées... comme j'ai dit !"
       ],
       "chalk_open": "Oh non ! Tu as trouvé la vraie !",
-      "win": "Grrr... Mon nez a grandi, mais je disais vrai ! Méfie-toi même de mon nez."
+      "win": "Grrr... Mon nez a grandi, mais je disais vrai ! Méfie-toi même de mon nez.",
+      "crumble": [
+        "Crac ! Hi hi ! Et si cette porte était un dessin ?",
+        ""
+      ],
+      "stuck": "Hi hi hi ! Une porte dessinée, et plus de retour ! Il ne reste que le trou..."
     },
     "rooms": {
       "main": [
-        "#########",
-        "#...d...#",
-        "#.#.#.#.#",
-        "d...@...d",
-        "#.#.#.#.#",
-        "#._.....#",
-        "######c##"
+        "###d###d#",
+        "#@#.....#",
+        "#.###.###",
+        "#...#...#",
+        "###.#.#.#",
+        "c.#.#.#.#",
+        "#.#.###f#",
+        "#.#....f#",
+        "#.#####.#",
+        "#...#..f#",
+        "#f#.#.###",
+        "#.#...f.d",
+        "#d#######"
       ]
     }
   },
@@ -628,13 +655,10 @@
     "id": "last_rule",
     "chapter": "VII. Le grand secret",
     "title": "La dernière farce",
-    "items": [
-      "plank"
-    ],
-    "par": 22,
+    "par": 24,
     "hints": [
       "Le rouge te suit dans la maison, jusqu'à la flaque blanche.",
-      "Regarde l'escalier pour l'arrêter, pose la planche, et touche le dessin à gauche."
+      "Après l'escalier, la planche est cachée tout en bas. Pose-la, puis touche le dessin à gauche."
     ],
     "say": {
       "start": "Ma dernière porte ! Tu ne passeras pas !",
@@ -653,7 +677,931 @@
         "#1.w...>#",
         "#######.#",
         "c._.....d",
+        "#######-#",
         "#########"
+      ]
+    },
+    "ending": true
+  },
+  {
+    "id": "ice",
+    "chapter": "VIII. Le lac gelé",
+    "title": "Patinoire",
+    "par": 5,
+    "hints": [
+      "Sur la glace, tu glisses jusqu'à ce que quelque chose t'arrête.",
+      "Les cases sans glace sont tes arrêts. Glisse d'un arrêt à l'autre."
+    ],
+    "say": {
+      "start": "~Sur la glace, tu t'arrêtes quand tu veux !",
+      "slide": [
+        "Wiii ! Hi hi ! Ça glisse !",
+        ""
+      ],
+      "win": "Grrr... Tu patines comme un pingouin."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@iiiii.#",
+        "#######i#",
+        "#.iiiii.#",
+        "#i#######",
+        "#.iiiiiiD",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "rocks",
+    "chapter": "VIII. Le lac gelé",
+    "title": "Les rochers",
+    "par": 9,
+    "hints": [
+      "Les rochers t'arrêtent : sers-t'en comme des freins !",
+      "Commence par glisser vers la gauche."
+    ],
+    "say": {
+      "start": "~Fonce tout droit vers la porte, c'est le plus rapide !",
+      "fall": "Plouf ! Un trou dans la glace ! Hi hi !",
+      "win": "Grrr... Tu réfléchis avant de glisser."
+    },
+    "rooms": {
+      "main": [
+        "########",
+        "#ii#iii#",
+        "#i##i@i#",
+        "#i#iiii#",
+        "#iii#ii#",
+        "#iiiiiiD",
+        "##ii_i_#",
+        "########"
+      ]
+    }
+  },
+  {
+    "id": "red_lake",
+    "chapter": "VIII. Le lac gelé",
+    "title": "Lac rouge",
+    "par": 10,
+    "hints": [
+      "La flaque rouge met tout à l'envers, même sur la glace.",
+      "La flaque blanche remet tout à l'endroit."
+    ],
+    "say": {
+      "start": "~La glace et le rouge, ça n'a rien à voir.",
+      "tint": "À l'envers sur la glace ! Hi hi !",
+      "fall": "Plouf ! Quelle couleur avait l'écran ?",
+      "win": "Grrr... Même à l'envers, tu glisses bien."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#iiiiii##",
+        "#wiii##i#",
+        "#riiiiii#",
+        "##i#iii##",
+        "#ii##ii_#",
+        "#ii@iiii#",
+        "#iiiiii_#",
+        "######D##"
+      ]
+    }
+  },
+  {
+    "id": "night_lake",
+    "chapter": "VIII. Le lac gelé",
+    "title": "Lac de nuit",
+    "dark": true,
+    "par": 10,
+    "hints": [
+      "Regarde bien devant toi avant de glisser.",
+      "Les rochers que tu as vus ne bougent pas : souviens-toi d'eux."
+    ],
+    "say": {
+      "start": "J'ai éteint la lumière sur le lac. Hi hi !",
+      "fall": "Plouf ! Tu ne l'avais pas vu venir !",
+      "win": "Grrr... Tu vois dans le noir, toi ?"
+    },
+    "rooms": {
+      "main": [
+        "########",
+        "#ii#iii#",
+        "#@iiiii#",
+        "#i#ii#i#",
+        "##iiii_#",
+        "#_iiiii#",
+        "#ii##ii#",
+        "##D#####"
+      ]
+    }
+  },
+  {
+    "id": "push",
+    "chapter": "IX. Les caisses",
+    "title": "Pousse !",
+    "par": 8,
+    "hints": [
+      "Marche contre une caisse pour la pousser.",
+      "Pousse la caisse dans le trou : elle devient un pont !"
+    ],
+    "say": {
+      "start": "~Cette caisse est bien trop lourde pour toi !",
+      "push": [
+        "Oh ! Tu es costaud !",
+        ""
+      ],
+      "crate_fill": "Oh non ! La caisse bouche le trou !",
+      "win": "Grrr... Tu es plus fort que tu en as l'air."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@..#...#",
+        "#.o.._..D",
+        "#...#...#",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "corner",
+    "chapter": "IX. Les caisses",
+    "title": "Le coin",
+    "par": 19,
+    "hints": [
+      "Une caisse poussée dans un coin ne ressort plus. Réfléchis avant de pousser !",
+      "Il faut les deux caisses : une pour chaque trou."
+    ],
+    "say": {
+      "start": "Deux trous, deux caisses. Attention aux coins ! Hi hi !",
+      "crate_blocked": [
+        "Coincée ! Hi hi !",
+        "Tu peux recommencer, tu sais."
+      ],
+      "win": "Grrr... Tu n'es jamais coincé, toi."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@...#..#",
+        "#.oo.#..#",
+        "#....__.D",
+        "#....#..#",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "brake",
+    "chapter": "IX. Les caisses",
+    "title": "Le frein",
+    "par": 18,
+    "hints": [
+      "Sur la glace, une caisse t'arrête, comme un rocher.",
+      "Pousse la caisse là où tu as besoin de t'arrêter."
+    ],
+    "say": {
+      "start": "~Une caisse sur la glace ? Ça ne sert à rien.",
+      "fall": "Plouf ! Hi hi !",
+      "win": "Grrr... Une caisse comme frein. Malin !"
+    },
+    "rooms": {
+      "main": [
+        "########",
+        "#iiiiii#",
+        "#iii_iiD",
+        "#_i#i.i#",
+        "##iii#.#",
+        "#i.oii.#",
+        "#i.@i_i#",
+        "########"
+      ]
+    }
+  },
+  {
+    "id": "store",
+    "chapter": "IX. Les caisses",
+    "title": "L'entrepôt",
+    "par": 22,
+    "hints": [
+      "Trois trous, deux caisses : un des trous restera vide.",
+      "Bouche le trou à côté des caisses, et celui juste au-dessus de la porte."
+    ],
+    "say": {
+      "start": "~Ces caisses sont vides. Elles ne servent à rien.",
+      "crate_blocked": "Hi hi ! Coincée !",
+      "win": "Grrr... Mon entrepôt est tout rangé."
+    },
+    "rooms": {
+      "main": [
+        "#######",
+        "###...#",
+        "#.....#",
+        "#._#..#",
+        "#@oo.##",
+        "#..__.#",
+        "###D###"
+      ]
+    }
+  },
+  {
+    "id": "button",
+    "chapter": "X. Les boutons",
+    "title": "Le bouton",
+    "par": 10,
+    "hints": [
+      "Le bouton ouvre la grille tant que quelque chose reste dessus.",
+      "Pousse la caisse sur le bouton."
+    ],
+    "say": {
+      "start": "~Ce bouton ne sert à rien.",
+      "gates_open": [
+        "Oh non ! La grille s'ouvre !",
+        ""
+      ],
+      "win": "Grrr... Finalement, il servait à quelque chose."
+    },
+    "rooms": {
+      "main": [
+        "#######",
+        "#.@op##",
+        "#.#####",
+        "#...g.D",
+        "#######"
+      ]
+    }
+  },
+  {
+    "id": "ice_button",
+    "chapter": "X. Les boutons",
+    "title": "Bouton gelé",
+    "par": 14,
+    "hints": [
+      "Une caisse poussée sur la glace glisse jusqu'au bout.",
+      "Fais glisser la caisse jusqu'au bouton, puis fais le tour."
+    ],
+    "say": {
+      "start": "~Ce bouton est bien trop loin pour une caisse.",
+      "gates_open": [
+        "La caisse a glissé sur le bouton ! Grrr...",
+        ""
+      ],
+      "win": "Grrr... La glace t'a aidé."
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@o.iiip#",
+        "#.#####.#",
+        "#.......#",
+        "####g####",
+        "#D......#",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "two_buttons",
+    "chapter": "X. Les boutons",
+    "title": "Deux boutons",
+    "par": 19,
+    "hints": [
+      "La grille s'ouvre seulement si les deux boutons sont appuyés.",
+      "La caisse sur le bouton de droite, toi sur celui de gauche. Puis descends !"
+    ],
+    "say": {
+      "start": "~Un seul bouton suffit pour ouvrir la grille.",
+      "gate_closed": [
+        "Hi hi ! Il faut les deux !",
+        "Et toi, tu peux appuyer aussi..."
+      ],
+      "win": "Grrr... Tu as appuyé au bon endroit."
+    },
+    "rooms": {
+      "main": [
+        "#######",
+        "#..@..#",
+        "#.#o#.#",
+        "#p...p#",
+        "#g#####",
+        "#.....D",
+        "#######"
+      ]
+    }
+  },
+  {
+    "id": "frozen_gates",
+    "chapter": "X. Les boutons",
+    "title": "Grilles gelées",
+    "par": 16,
+    "hints": [
+      "Deux grilles, un seul bouton : elles s'ouvrent ensemble.",
+      "Une grille ouverte, tu peux y entrer. Et tu peux en sortir même si elle se referme !"
+    ],
+    "say": {
+      "start": "Des grilles, de la glace et une caisse. Hi hi !",
+      "gate_closed": "Fermée ! Hi hi !",
+      "win": "Grrr... Tu sais ouvrir toutes mes grilles."
+    },
+    "rooms": {
+      "main": [
+        "########",
+        "#..i#.gD",
+        "##oiiii#",
+        "#i.ipg@#",
+        "#i#.iii#",
+        "#iiiiii#",
+        "#i##iii#",
+        "########"
+      ]
+    }
+  },
+  {
+    "id": "one_way",
+    "chapter": "XI. Le sol qui ment",
+    "title": "Aller simple",
+    "par": 10,
+    "hints": [
+      "Le sol fissuré s'effondre quand tu le quittes : on ne passe qu'une fois !",
+      "Prends la clé par le haut, puis descends vers la porte grise."
+    ],
+    "say": {
+      "start": "~Prends ton temps, tu pourras toujours revenir en arrière.",
+      "stuck": "Hi hi hi ! Coincé pour toujours ! Saute dans le trou pour recommencer !",
+      "win": "Grrr... Tu as compris mon sol qui ment.",
+      "crumble": [
+        "Crac ! Hi hi ! Plus de retour possible !",
+        "Encore un ! Hi hi hi !",
+        ""
+      ]
+    },
+    "rooms": {
+      "main": [
+        "#########",
+        "#@..f..k#",
+        "#.#####f#",
+        "#...f...L",
+        "#########"
+      ]
+    }
+  },
+  {
+    "id": "plank_trap",
+    "chapter": "XI. Le sol qui ment",
+    "title": "Planche de secours",
+    "par": 15,
+    "hints": [
+      "Ramasse la planche avant de te couper la route : le sol fissuré ne pardonne pas.",
+      "La planche sert pour le trou juste sous la porte, un peu à gauche."
+    ],
+    "say": {
+      "start": "~Cette planche ne te servira à rien.",
+      "pickup": "Hé ! Pas ma planche !",
+      "win": "Grrr... Ma planche t'a sauvé.",
+      "crumble": [
+        "Crac ! Hi hi ! Plus de retour possible !",
+        "Encore un ! Hi hi hi !",
+        ""
+      ]
+    },
+    "rooms": {
+      "main": [
+        "#####D#",
+        "#f.#_.#",
+        "#@f.f##",
+        "#_#ff.#",
+        "#f.f#-#",
+        "#_....#",
+        "#######"
+      ]
+    }
+  },
+  {
+    "id": "parquet",
+    "chapter": "XI. Le sol qui ment",
+    "title": "Le parquet qui craque",
+    "par": 18,
+    "hints": [
+      "Chaque case fissurée ne sert qu'une fois : trace tout ton chemin avant de bouger !",
+      "Descends, va chercher la clé par la gauche, puis fais le grand tour par le bas."
+    ],
+    "say": {
+      "start": "~Mon parquet est tout neuf. Il ne craque jamais !",
+      "crumble": [
+        "Crac !",
+        "Crac crac ! Hi hi !",
+        ""
+      ],
+      "stuck": "Hi hi hi ! Plus une seule case pour toi ! Saute, et on recommence !",
+      "win": "Grrr... Tu as traversé tout mon parquet !"
+    },
+    "rooms": {
+      "main": [
+        "#######",
+        "#fk_@f#",
+        "#ff#ffL",
+        "#fffff#",
+        "#fffff#",
+        "##f#ff#",
+        "#######"
+      ]
+    }
+  },
+  {
+    "id": "key_trap",
+    "chapter": "XI. Le sol qui ment",
+    "title": "La clé piégée",
+    "par": 22,
+    "hints": [
+      "La clé est en bas à droite. Le chemin du retour n'est pas celui de l'aller !",
+      "Après la clé, repars par la gauche et remonte par le bord."
+    ],
+    "say": {
+      "start": "~La clé est juste à côté. Aller-retour, facile !",
+      "pickup": "Hi hi ! Et maintenant, comment tu repars ?",
+      "win": "Grrr... Tu avais tout prévu.",
+      "crumble": [
+        "Crac ! Hi hi ! Plus de retour possible !",
+        "Encore un ! Hi hi hi !",
+        ""
+      ]
+    },
+    "rooms": {
+      "main": [
+        "#####L#",
+        "#..@f.#",
+        "#ff##.#",
+        "#.fff##",
+        "#f....#",
+        "#.f#.k#",
+        "#######"
+      ]
+    }
+  },
+  {
+    "id": "ice_trap",
+    "chapter": "XII. Les pièges de Filou",
+    "title": "Glissade fatale",
+    "par": 9,
+    "hints": [
+      "Le sol fissuré t'arrête sur la glace... mais il casse quand tu repars !",
+      "Commence par glisser vers le haut."
+    ],
+    "say": {
+      "start": "~La glace et le sol fissuré ? Aucun danger.",
+      "fall": "Plouf ! Hi hi hi !",
+      "win": "Grrr... Tu glisses trop bien.",
+      "crumble": [
+        "Crac ! Hi hi ! Plus de retour possible !",
+        "Encore un ! Hi hi hi !",
+        ""
+      ]
+    },
+    "rooms": {
+      "main": [
+        "########",
+        "##iiii_#",
+        "#iifiif#",
+        "#i._iii#",
+        "#if.if##",
+        "#@#ffif#",
+        "#i#iii.#",
+        "#####D##"
+      ]
+    }
+  },
+  {
+    "id": "stairs_trap",
+    "chapter": "XII. Les pièges de Filou",
+    "title": "Escalier traître",
+    "par": 18,
+    "hints": [
+      "Pour attendre un escalier, cogne-toi contre un mur. Surtout, ne recule pas sur le sol fissuré !",
+      "Va tout en haut à gauche, et attends que l'escalier en dessous pointe vers le bas."
+    ],
+    "say": {
+      "start": "~Recule autant que tu veux, le sol tiendra.",
+      "arrow_blocked": [
+        "Pas dans ce sens ! Hi hi !",
+        "Attends-le... sans reculer !"
+      ],
+      "win": "Grrr... Tu sais attendre, toi.",
+      "crumble": [
+        "Crac ! Hi hi ! Plus de retour possible !",
+        "Encore un ! Hi hi hi !",
+        ""
+      ]
+    },
+    "rooms": {
+      "main": [
+        "#######",
+        "#ff...#",
+        "#^f.f@#",
+        "#.##.##",
+        "#.#._^D",
+        "#...f.#",
+        "#######"
+      ]
+    }
+  },
+  {
+    "id": "crate_trap",
+    "chapter": "XII. Les pièges de Filou",
+    "title": "Caisse de secours",
+    "par": 24,
+    "hints": [
+      "Une caisse peut boucher un trou, même celui à côté de la porte.",
+      "La caisse du bas doit finir dans le trou près de la porte. Fais-lui de la place d'abord !"
+    ],
+    "say": {
+      "start": "~Ces caisses ? Elles sont là pour faire joli.",
+      "crate_blocked": "Coincée ! Hi hi !",
+      "win": "Grrr... Mes caisses t'ont aidé.",
+      "crumble": [
+        "Crac ! Hi hi ! Plus de retour possible !",
+        "Encore un ! Hi hi hi !",
+        ""
+      ]
+    },
+    "rooms": {
+      "main": [
+        "#######",
+        "#f..o.#",
+        "##f@..#",
+        "#._.#f#",
+        "#.o.ff#",
+        "#...._#",
+        "#####D#"
+      ]
+    }
+  },
+  {
+    "id": "gate_trap",
+    "chapter": "XII. Les pièges de Filou",
+    "title": "La grille piégée",
+    "par": 24,
+    "hints": [
+      "Le bouton est en bas : une caisse doit y rester.",
+      "Fais descendre la caisse jusqu'au bouton, puis file par la grille du haut."
+    ],
+    "say": {
+      "start": "~Pas besoin de bouton ici. La grille est déjà ouverte !",
+      "gate_closed": [
+        "Hi hi ! Fermée !",
+        "Il faut quelque chose sur le bouton..."
+      ],
+      "stuck": "Hi hi hi ! La grille, les trous, et toi coincé au milieu !",
+      "win": "Grrr... Même ma grille piégée !",
+      "crumble": [
+        "Crac ! Hi hi ! Plus de retour possible !",
+        "Encore un ! Hi hi hi !",
+        ""
+      ]
+    },
+    "rooms": {
+      "main": [
+        "#######",
+        "#.#.fgD",
+        "#f#.of#",
+        "##....#",
+        "#...ff#",
+        "#f#p@g#",
+        "#######"
+      ]
+    }
+  },
+  {
+    "id": "switch",
+    "chapter": "XIII. Les interrupteurs",
+    "title": "Interrupteur",
+    "par": 12,
+    "hints": [
+      "Marche sur l'interrupteur : les blocs jaunes se couchent et les violets se lèvent. Et inversement !",
+      "Commence par aller à droite, puis en haut."
+    ],
+    "say": {
+      "start": "~Ces blocs sont collés au sol. Ils ne bougeront jamais.",
+      "toggle": [
+        "Oh non ! Les blocs bougent !",
+        "Et hop, ça rebascule ! Hi hi !",
+        ""
+      ],
+      "block": "Hi hi ! Un bloc debout !",
+      "win": "Grrr... Tu as compris mes interrupteurs."
+    },
+    "rooms": {
+      "main": [
+        "#######",
+        "#.u.y.#",
+        "##..u.#",
+        "#@uy..#",
+        "###..u#",
+        "#.us..#",
+        "##D####"
+      ]
+    }
+  },
+  {
+    "id": "ice_switch",
+    "chapter": "XIII. Les interrupteurs",
+    "title": "Patinoire à bascule",
+    "par": 13,
+    "hints": [
+      "Sur la glace, un bloc debout t'arrête. Couché, tu glisses dessus.",
+      "Commence par glisser vers le haut, puis à gauche."
+    ],
+    "say": {
+      "start": "~Sur la glace, les blocs ne servent à rien.",
+      "toggle": [
+        "Bascule ! Hi hi !",
+        ""
+      ],
+      "fall": "Plouf !",
+      "win": "Grrr... Tu glisses et tu bascules !"
+    },
+    "rooms": {
+      "main": [
+        "########",
+        "#iiiy#u#",
+        "Diiiuii#",
+        "#syi#i##",
+        "#.iiiii#",
+        "#ii..ui#",
+        "#ui#iy@#",
+        "########"
+      ]
+    }
+  },
+  {
+    "id": "two_switches",
+    "chapter": "XIII. Les interrupteurs",
+    "title": "Deux leviers",
+    "par": 17,
+    "hints": [
+      "Deux interrupteurs côte à côte : chacun fait basculer les blocs. Compte bien !",
+      "Commence par descendre, puis va à gauche vers les interrupteurs."
+    ],
+    "say": {
+      "start": "~Deux interrupteurs, ça s'annule. Ne t'embête pas !",
+      "toggle": [
+        "Bascule !",
+        "Rebascule ! Hi hi !",
+        ""
+      ],
+      "win": "Grrr... Tu sais compter, toi."
+    },
+    "rooms": {
+      "main": [
+        "#######",
+        "##.u#yD",
+        "#..#@.#",
+        "#ssu..#",
+        "#.u...#",
+        "#..._.#",
+        "#######"
+      ]
+    }
+  },
+  {
+    "id": "switch_maze",
+    "chapter": "XIII. Les interrupteurs",
+    "title": "Le labyrinthe qui bouge",
+    "par": 19,
+    "hints": [
+      "Avant de basculer, regarde quels blocs te barreront la route ensuite.",
+      "Commence par aller à gauche, puis descends."
+    ],
+    "say": {
+      "start": "~Ce labyrinthe est très simple : il ne change jamais.",
+      "toggle": [
+        "Le labyrinthe a changé ! Hi hi !",
+        ""
+      ],
+      "fall": "Plouf ! Hi hi hi !",
+      "win": "Grrr... Tu as dompté mon labyrinthe."
+    },
+    "rooms": {
+      "main": [
+        "#D#####",
+        "#.y...#",
+        "#yu.@y#",
+        "#..._.#",
+        "##u#.s#",
+        "#uus..#",
+        "#######"
+      ]
+    }
+  },
+  {
+    "id": "switch_trap",
+    "chapter": "XIV. Le grand mélange",
+    "title": "Bascule piégée",
+    "par": 9,
+    "hints": [
+      "Le sol fissuré ne te laisse passer qu'une fois : bascule au bon moment !",
+      "Descends tout en bas d'abord."
+    ],
+    "say": {
+      "start": "~Tu peux basculer autant de fois que tu veux.",
+      "crumble": [
+        "Crac ! Hi hi !",
+        ""
+      ],
+      "stuck": "Hi hi hi ! Bloqué entre mes blocs et mes trous ! Saute pour recommencer !",
+      "win": "Grrr... Pas mal du tout."
+    },
+    "rooms": {
+      "main": [
+        "#######",
+        "#y.@f.#",
+        "#u.f.f#",
+        "#.....#",
+        "###f.u#",
+        "Dfus..#",
+        "#######"
+      ]
+    }
+  },
+  {
+    "id": "crate_switch",
+    "chapter": "XIV. Le grand mélange",
+    "title": "Caisse à bascule",
+    "par": 19,
+    "hints": [
+      "Une caisse ne passe jamais sur un bloc, même couché.",
+      "Commence par descendre, puis va à gauche."
+    ],
+    "say": {
+      "start": "~La caisse ? Elle ne sert à rien du tout.",
+      "crate_blocked": "Coincée ! Hi hi !",
+      "toggle": [
+        "Bascule ! Hi hi !",
+        ""
+      ],
+      "win": "Grrr... Caisse, trous et blocs. Bravo."
+    },
+    "rooms": {
+      "main": [
+        "#######",
+        "#__..u#",
+        "#..#.u#",
+        "#.#..@#",
+        "#s#yo.#",
+        "#uuy..#",
+        "#D#####"
+      ]
+    }
+  },
+  {
+    "id": "trap_gates",
+    "chapter": "XIV. Le grand mélange",
+    "title": "Grilles et fissures",
+    "par": 19,
+    "hints": [
+      "La caisse doit finir sur le bouton. Attention : le sol fissuré ne se traverse qu'une fois.",
+      "Commence par aller à gauche, jusqu'au bout."
+    ],
+    "say": {
+      "start": "~Les grilles sont décoratives. Fonce !",
+      "gate_closed": "Hi hi ! Fermée !",
+      "crumble": [
+        "Crac !",
+        ""
+      ],
+      "win": "Grrr... Tu as tout réparé."
+    },
+    "rooms": {
+      "main": [
+        "#######",
+        "#f.g.f#",
+        "#.f..gD",
+        "#.p.@##",
+        "#fo...#",
+        "#.#ff.#",
+        "#######"
+      ]
+    }
+  },
+  {
+    "id": "red_switch",
+    "chapter": "XIV. Le grand mélange",
+    "title": "Le grand mélange",
+    "par": 27,
+    "hints": [
+      "La flaque rouge met tout à l'envers, même pour aller chercher la planche.",
+      "Commence par descendre, puis va chercher la planche à gauche."
+    ],
+    "say": {
+      "start": "Rouge, planche, blocs et trous : mon grand mélange ! Hi hi !",
+      "tint": "À l'envers ! Hi hi !",
+      "toggle": [
+        "Bascule ! Et toujours à l'envers !",
+        ""
+      ],
+      "pickup": "Hé ! Ma planche !",
+      "win": "Grrr... Tu as tout démêlé !"
+    },
+    "rooms": {
+      "main": [
+        "##D####",
+        "#uy@r.#",
+        "#-.uy.#",
+        "###._.#",
+        "#..y#_#",
+        "#.s...#",
+        "#######"
+      ]
+    }
+  },
+  {
+    "id": "big_lake",
+    "chapter": "XV. La revanche de Filou",
+    "title": "Le grand lac",
+    "par": 11,
+    "hints": [
+      "Chaque rocher est un frein. Cherche ceux qui te rapprochent de la porte.",
+      "Commence par glisser à droite, puis en bas."
+    ],
+    "say": {
+      "start": "Tu croyais avoir gagné ? Voici ma revanche ! Hi hi !",
+      "fall": "Plouf ! Hi hi hi !",
+      "win": "Grrr... Ce n'est pas fini !"
+    },
+    "rooms": {
+      "main": [
+        "########",
+        "#ii#_ii#",
+        "#iii_@i#",
+        "#iiii#i#",
+        "Diii#ii#",
+        "#i#iiii#",
+        "##i#iii#",
+        "########"
+      ]
+    }
+  },
+  {
+    "id": "red_crates",
+    "chapter": "XV. La revanche de Filou",
+    "title": "Caisses à l'envers",
+    "par": 19,
+    "hints": [
+      "En rouge, tout est à l'envers : même pour pousser les caisses !",
+      "Une caisse va dans le trou du haut, l'autre dans le trou près de la porte."
+    ],
+    "say": {
+      "start": "~La flaque rouge ? Elle est juste là pour décorer.",
+      "tint": "À l'envers ! Hi hi !",
+      "crate_blocked": "Coincée ! Hi hi !",
+      "win": "Grrr... Tu pousses même à l'envers !"
+    },
+    "rooms": {
+      "main": [
+        "#######",
+        "#.._..#",
+        "##.#..#",
+        "#.@oo.#",
+        "D_..r.#",
+        "###...#",
+        "#######"
+      ]
+    }
+  },
+  {
+    "id": "final_trick",
+    "chapter": "XV. La revanche de Filou",
+    "title": "La toute dernière farce",
+    "par": 24,
+    "hints": [
+      "La flaque rouge te suit dans la maison : tout y reste à l'envers !",
+      "Dans la maison, la caisse doit finir sur le bouton. Puis file vers la grille ouverte."
+    ],
+    "say": {
+      "start": "Ma toute dernière farce ! Cette fois, tu ne sortiras pas !",
+      "painted_door": "~Celle-là, c'était la bonne. Dommage !",
+      "portal": [
+        "Bienvenue dans ma maison gelée ! Hi hi !",
+        "Te revoilà !"
+      ],
+      "win": "Grrr... Bon. Tu as gagné. Pour de vrai !"
+    },
+    "rooms": {
+      "outside": [
+        "##d###d##",
+        "#.......#",
+        "#@o._.r1#",
+        "#########"
+      ],
+      "inside": [
+        "########",
+        "#iiii.##",
+        "##iiii1#",
+        "#iiig.p#",
+        "#iiiii.#",
+        "Diigioi#",
+        "#ii.i.##",
+        "########"
       ]
     }
   }

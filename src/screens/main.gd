@@ -67,12 +67,14 @@ func _play(index: int) -> void:
 
 
 func _after_level(index: int) -> void:
-	if index + 1 < Levels.all().size():
-		_play(index + 1)
-	else:
+	var last := index + 1 >= Levels.all().size()
+	if index == Levels.story_end() or last:
 		var ending := Ending.new()
+		ending.final = last
 		ending.done.connect(_show_menu)
 		_swap(ending)
+	else:
+		_play(index + 1)
 
 
 # --- Daily challenge: generated once a day, then kept in the save -----------

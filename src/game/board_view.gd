@@ -16,6 +16,11 @@ const C_HOLE := Color("1e1b4b")
 const C_INK := Color("2b2d42")
 const C_HINT := Color("ff4d8d")
 const C_WALL := Color("a78bfa")  # particles of a wall you walked through
+const C_ICE := [Color("d4f1ff"), Color("c2e9fb")]  # checkerboard, like the floor
+const C_CRATE := Color("d08c45")
+const C_BUTTON := Color("ef476f")
+const C_GATE := Color("4a5568")
+const C_BLOCKS := {"y": Color("ffc93c"), "u": Color("9b5de5")}
 const PAINT_COLORS := {"w": Color("ffffff"), "r": Color("ef233c"), "b": Color("3a86ff")}
 
 var board: Board
@@ -34,10 +39,13 @@ var _time := 0.0
 var _mood := "idle"
 var _mood_time := 0.0
 var _particles: Array = []  # {p, v, life, max, color, size}
-var _arrow_angles := {}  # "room|x|y" -> displayed angle, eased towards the real one
-var _memory := {}  # dark rooms: "room|x|y" -> cell as last seen (it may have changed since)
+var _arrow_angles := {}  # Vector3i(x, y, room) -> displayed angle, eased towards the real one
+var _memory := {}  # dark rooms: Vector3i(x, y, room) -> cell as last seen (it may have changed since)
+var _crate_px := {}  # crate cell -> where it is drawn (it eases towards its cell)
+var _sinking: Array = []  # crates going down into a hole: {p (px), cell, t}
+var _gates := 0.0  # 0 closed .. 1 open, eased
+var _boxes := {}  # rounded boxes for the current tile size (made once, not every frame)
 var _hint_swipe := Vector2i.ZERO
-var _hint_cell := Vector2i(-1, -1)
 
 
 ## Centers the current room inside `area` with the biggest tiles that fit.
@@ -46,12 +54,24 @@ func fit(area: Rect2) -> void:
 	tile = floorf(minf(minf(area.size.x / cells.x, area.size.y / cells.y), 110.0))
 	position = (area.position + (area.size - cells * tile) / 2.0).round()
 	_player_px = _cell_center(board.pos)
+	_crate_px.clear()
+	_boxes = {
+		"shadow": Look.box(Look.SHADOW, int(tile * 0.3), false),
+		"hole": Look.box(C_HOLE, int(tile * 0.22), false),
+		"hole_rim": Look.box(Color(1, 1, 1, 0.08), int(tile * 0.16), false),
+		"stairs": Look.box(C_STAIRS, int(tile * 0.2), false),
+		"crate": Look.box(C_CRATE.darkened(0.12), int(tile * 0.14), false),
+		"crate_top": Look.box(C_CRATE, int(tile * 0.12), false),
+	}
 
 
 func reset() -> void:
 	_particles.clear()
 	_arrow_angles.clear()
 	_memory.clear()
+	_crate_px.clear()
+	_sinking.clear()
+	_gates = 1.0 if board.gates_open() else 0.0
 	_fall = 0.0
 	_won = 0.0
 	_squash = 0.0
@@ -114,19 +134,23 @@ func burst(cell: Vector2i, color: Color, count: int, speed := 1.5) -> void:
 		})
 
 
+## The last move pushed a crate: it slides from its old cell (and may sink into a hole).
+func crate_moved(from: Vector2i, to: Vector2i, sank: bool) -> void:
+	var px: Vector2 = _crate_px.get(from, _cell_center(from))
+	_crate_px.erase(from)
+	if sank:
+		_sinking.append({"p": px, "cell": to, "t": 0.0})
+	else:
+		_crate_px[to] = px
+
+
 func show_hint_swipe(dir: Vector2i) -> void:
 	clear_hint()
 	_hint_swipe = dir
 
 
-func show_hint_cell(cell: Vector2i) -> void:
-	clear_hint()
-	_hint_cell = cell
-
-
 func clear_hint() -> void:
 	_hint_swipe = Vector2i.ZERO
-	_hint_cell = Vector2i(-1, -1)
 
 
 # --- Animation ---------------------------------------------------------------
@@ -156,15 +180,23 @@ func _process(delta: float) -> void:
 		p.life -= delta
 	_particles = _particles.filter(func(p): return p.life > 0.0)
 
-	var cells := board.room_size()
-	for y in cells.y:
-		for x in cells.x:
-			var ch := board.cell(Vector2i(x, y))
-			if Board.ARROWS.has(ch):
-				var key := _key(Vector2i(x, y))
-				var goal := Vector2(Board.ARROWS[ch]).angle()
-				var shown: float = _arrow_angles.get(key, goal)
-				_arrow_angles[key] = shown + wrapf(goal - shown, -PI, PI) * minf(1.0, delta * 14.0)
+	for p in board.stairs_here():
+		var key := _key(p)
+		var goal := Vector2(Board.ARROWS[board.cell(p)]).angle()
+		var shown: float = _arrow_angles.get(key, goal)
+		_arrow_angles[key] = shown + wrapf(goal - shown, -PI, PI) * minf(1.0, delta * 14.0)
+
+	if board.has_crates() or not _sinking.is_empty():
+		var eased := {}
+		for c in board.crates():
+			var shown: Vector2 = _crate_px.get(c, _cell_center(c))
+			eased[c] = shown.lerp(_cell_center(c), minf(1.0, delta * 16.0))
+		_crate_px = eased
+		for s in _sinking:
+			s.t += delta * 2.5
+			s.p = s.p.lerp(_cell_center(s.cell), minf(1.0, delta * 16.0))
+		_sinking = _sinking.filter(func(s): return s.t < 1.0)
+	_gates = move_toward(_gates, 1.0 if board.gates_open() else 0.0, delta * 5.0)
 	queue_redraw()
 
 
@@ -172,8 +204,8 @@ func _cell_center(p: Vector2i) -> Vector2:
 	return (Vector2(p) + Vector2.ONE * 0.5) * tile
 
 
-func _key(p: Vector2i) -> String:
-	return "%s|%d|%d" % [board.room, p.x, p.y]
+func _key(p: Vector2i) -> Vector3i:
+	return Vector3i(p.x, p.y, board.room_index())
 
 
 # --- Drawing -----------------------------------------------------------------
@@ -185,9 +217,9 @@ func _draw() -> void:
 	draw_set_transform(offset)
 	var cells := board.room_size()
 	if not dark:  # the room sits on the table like a toy
-		var shadow := Look.box(Look.SHADOW, int(tile * 0.3), false)
-		draw_style_box(shadow, Rect2(Vector2(0, tile * 0.18), Vector2(cells) * tile))
-	var lit := _lit_cells()
+		draw_style_box(_boxes.shadow, Rect2(Vector2(0, tile * 0.18), Vector2(cells) * tile))
+	var seen := board.watched_cells()
+	var lit := _lit_cells(seen)
 	var night := Color(theme.bg[1], 0.68)
 	for y in cells.y:
 		for x in cells.x:
@@ -203,7 +235,14 @@ func _draw() -> void:
 				_draw_cell(remembered, p, r, angle)
 				draw_rect(r, night)
 
-	var seen := board.watched_cells()
+	for s in _sinking:  # a crate going down into its hole
+		_draw_crate(s.p, 1.0 - s.t * 0.3)
+	for c in _crate_px:
+		if not dark or lit.has(c):
+			if board.cell(c) == Board.PLATE:  # the button under it shows through, pressed
+				draw_rect(Rect2(_cell_center(c) - Vector2.ONE * tile * 0.47, Vector2.ONE * tile * 0.94), C_BUTTON, false, tile * 0.06)
+			_draw_crate(_crate_px[c])
+
 	for i in range(1, seen.size()):  # the gaze: a soft beam of light ahead
 		var fade := 1.0 - float(i) / (seen.size() + 2)
 		draw_rect(Rect2(Vector2(seen[i]) * tile, Vector2.ONE * tile).grow(-tile * 0.06), Color(Look.GOLD, 0.22 * fade))
@@ -216,11 +255,11 @@ func _draw() -> void:
 	draw_set_transform(Vector2.ZERO)
 
 
-func _lit_cells() -> Dictionary:
+func _lit_cells(seen: Array[Vector2i]) -> Dictionary:
 	var lit := {}
 	if not dark:
 		return lit
-	for p in board.watched_cells():
+	for p in seen:
 		lit[p] = true
 	for dy in range(-1, 2):
 		for dx in range(-1, 2):
@@ -253,9 +292,6 @@ func _draw_hints() -> void:
 		draw_colored_polygon(PackedVector2Array([to + dir * tile * 0.26, to + side, to - side]), C_HINT)
 		var k := fmod(_time * 0.9, 1.0)  # a fingertip showing the swipe, again and again
 		_draw_touch(_player_px + dir * tile * 1.4 * ease(k, 0.6), 1.0 - k * 0.7)
-	if _hint_cell.x >= 0:
-		var r := Rect2(Vector2(_hint_cell) * tile, Vector2.ONE * tile).grow(-tile * (0.04 + 0.06 * pulse))
-		draw_rect(r, C_HINT, false, tile * 0.08)
 
 
 ## Where a finger touches the screen: a white dot in a pink ring.
@@ -287,12 +323,37 @@ func _draw_cell(ch: String, p: Vector2i, r: Rect2, arrow_angle: float) -> void:
 		Board.CHALK_DOOR:
 			_draw_wall(r)
 			_draw_chalk(r)
+		Board.ICE:
+			draw_rect(r, C_ICE[(p.x + p.y) % 2])
+			for streak in [[Vector2(0.18, 0.3), Vector2(0.42, 0.18)], [Vector2(0.5, 0.78), Vector2(0.82, 0.6)]]:
+				draw_line(r.position + r.size * streak[0], r.position + r.size * streak[1], Color(1, 1, 1, 0.85), tile * 0.05, true)
 		_:
 			draw_rect(r, theme.floor[(p.x + p.y) % 2])
 			if ch == Board.VOID:
-				var hole := Look.box(C_HOLE, int(tile * 0.22), false)
-				draw_style_box(hole, r.grow(-tile * 0.08))
-				draw_style_box(Look.box(Color(1, 1, 1, 0.08), int(tile * 0.16), false), r.grow(-tile * 0.22))
+				draw_style_box(_boxes.hole, r.grow(-tile * 0.08))
+				draw_style_box(_boxes.hole_rim, r.grow(-tile * 0.22))
+			elif C_BLOCKS.has(ch):
+				_draw_block(r, C_BLOCKS[ch], board.is_raised(ch))
+			elif ch == Board.SWITCH:
+				_draw_switch(r)
+			elif ch == Board.FRAGILE:  # the floor, crossed with cracks
+				draw_rect(r.grow(-tile * 0.04), Color(C_INK, 0.06))
+				for crack in [[0.15, 0.3, 0.42, 0.45, 0.5, 0.2], [0.42, 0.45, 0.58, 0.7, 0.85, 0.62], [0.58, 0.7, 0.45, 0.9, 0.3, 0.82]]:
+					draw_polyline(PackedVector2Array([r.position + r.size * Vector2(crack[0], crack[1]), r.position + r.size * Vector2(crack[2], crack[3]), r.position + r.size * Vector2(crack[4], crack[5])]), Color(C_INK, 0.55), maxf(2.0, tile * 0.035), true)
+			elif ch == Board.BRIDGE:  # the hole, with Pico's plank laid over it
+				draw_style_box(_boxes.hole, r.grow(-tile * 0.08))
+				draw_item(self, "plank", r)
+			elif Board.PICKUPS.has(ch):  # bobbing, to say "take me"
+				var bob := Vector2(0, sin(_time * 3.0 + p.x) * tile * 0.05)
+				draw_circle(r.get_center(), tile * 0.36, Color(Look.GOLD, 0.25), true, -1.0, true)
+				draw_item(self, Board.PICKUPS[ch], Rect2(r.position + bob, r.size).grow(-tile * 0.12))
+			elif ch == Board.FILLED:  # the crate, sunk level with the floor
+				draw_style_box(_boxes.crate, r.grow(-tile * 0.08))
+				draw_rect(r.grow(-tile * 0.22), C_CRATE.darkened(0.3), false, tile * 0.05)
+			elif ch == Board.PLATE:
+				_draw_button(r, board.has_crate(p) or board.pos == p)
+			elif ch == Board.GATE:
+				_draw_gate(r, 1.0 if board.pos == p or board.has_crate(p) else _gates)  # it cannot close on someone
 			elif Board.ARROWS.has(ch):
 				_draw_stairs(r, arrow_angle)
 			elif Board.PAINTS.has(ch):
@@ -341,13 +402,72 @@ func _draw_crack(r: Rect2) -> void:
 
 
 func _draw_stairs(r: Rect2, angle: float) -> void:
-	draw_style_box(Look.box(C_STAIRS, int(tile * 0.2), false), r.grow(-tile * 0.08))
+	draw_style_box(_boxes.stairs, r.grow(-tile * 0.08))
 	var c := r.get_center()
 	var fwd := Vector2.from_angle(angle) * tile
 	var side := fwd.orthogonal()
 	for step: float in [-0.14, 0.12]:
 		var tip := c + fwd * (step + 0.14)
 		draw_polyline(PackedVector2Array([tip - fwd * 0.2 + side * 0.24, tip, tip - fwd * 0.2 - side * 0.24]), Color.WHITE, tile * 0.09, true)
+
+
+## A wooden crate centred on `center` (smaller while it sinks into a hole).
+func _draw_crate(center: Vector2, scale := 1.0) -> void:
+	var half := tile * 0.42 * scale
+	var r := Rect2(center - Vector2(half, half), Vector2(half, half) * 2.0)
+	draw_style_box(_boxes.crate, r)
+	var top := Rect2(r.position, Vector2(r.size.x, r.size.y * 0.84))
+	draw_style_box(_boxes.crate_top, top)
+	var plank := C_CRATE.darkened(0.3)
+	var inner := top.grow(-half * 0.2)
+	draw_rect(inner, plank, false, tile * 0.05)
+	draw_line(inner.position, inner.end, plank, tile * 0.06, true)
+
+
+## A switch block: up, it is a coloured wall; down, a flat tile with its outline.
+func _draw_block(r: Rect2, color: Color, raised: bool) -> void:
+	if raised:
+		var block := r.grow(-tile * 0.04)
+		draw_rect(block, color.darkened(0.25))
+		draw_rect(Rect2(block.position, Vector2(block.size.x, block.size.y * 0.8)), color)
+		draw_rect(block.grow(-tile * 0.16), Color(1, 1, 1, 0.25), false, tile * 0.05)
+	else:
+		draw_rect(r.grow(-tile * 0.1), Color(color, 0.25))
+		draw_rect(r.grow(-tile * 0.1), Color(color, 0.8), false, tile * 0.05)
+
+
+## A lever on a plate: it leans towards the colour of the blocks that are down.
+func _draw_switch(r: Rect2) -> void:
+	var c := r.get_center()
+	draw_circle(c, tile * 0.34, Color("8d99ae"), true, -1.0, true)
+	var down: Color = C_BLOCKS.y if board.switched else C_BLOCKS.u
+	var tip := c + Vector2(tile * (0.2 if board.switched else -0.2), -tile * 0.22)
+	draw_line(c + Vector2(0, tile * 0.1), tip, C_INK, tile * 0.07, true)
+	draw_circle(tip, tile * 0.1, down, true, -1.0, true)
+
+
+## A round button in a grey ring; pressed down when something stands on it.
+func _draw_button(r: Rect2, pressed: bool) -> void:
+	var c := r.get_center()
+	draw_circle(c, tile * 0.32, Color("8d99ae"), true, -1.0, true)
+	if pressed:
+		draw_circle(c, tile * 0.22, C_BUTTON.darkened(0.25), true, -1.0, true)
+	else:
+		draw_circle(c + Vector2(0, tile * 0.05), tile * 0.22, C_BUTTON.darkened(0.35), true, -1.0, true)
+		draw_circle(c, tile * 0.22, C_BUTTON, true, -1.0, true)
+		draw_circle(c + Vector2(-tile * 0.07, -tile * 0.07), tile * 0.06, Color(1, 1, 1, 0.6), true, -1.0, true)
+
+
+## Bars that slide up into the top of the cell as the gates open (`open` 0..1).
+func _draw_gate(r: Rect2, open: float) -> void:
+	var top := r.position.y + tile * 0.06
+	var bottom := lerpf(r.end.y - tile * 0.06, top + tile * 0.14, open)
+	draw_rect(Rect2(r.position.x + tile * 0.06, top - tile * 0.02, tile * 0.88, tile * 0.12), C_GATE)
+	for k in 4:
+		var x := r.position.x + tile * (0.2 + k * 0.2)
+		draw_line(Vector2(x, top), Vector2(x, bottom), C_GATE, tile * 0.08, true)
+	if open < 0.5:
+		draw_line(Vector2(r.position.x + tile * 0.1, bottom - tile * 0.12), Vector2(r.end.x - tile * 0.1, bottom - tile * 0.12), C_GATE, tile * 0.06, true)
 
 
 func _draw_puddle(r: Rect2, paint: Color, white: bool) -> void:
@@ -374,7 +494,7 @@ func _sparkle(p: Vector2, s: float) -> void:
 	draw_line(p - Vector2(0, s), p + Vector2(0, s), Color.WHITE, s * 0.35, true)
 
 
-## Item art, shared by the top bar and drag previews.
+## Item art, shared by the top bar and the items lying in the level.
 static func draw_item(ci: CanvasItem, item: String, r: Rect2) -> void:
 	var at := func(x: float, y: float) -> Vector2: return r.position + r.size * Vector2(x, y)
 	match item:

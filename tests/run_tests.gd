@@ -61,13 +61,86 @@ func _test_rules() -> void:
 	_check(b.cell(Vector2i(3, 1)) == ">" and b.stairs_signature() != before, "unwatched stairs turn clockwise")
 	_check(b.move(Vector2i.RIGHT) == ["step"], "stairs let you pass in their direction")
 
-	b = _board(["#####", "#@_D#", "#####"], ["plank"])
-	_check(not b.can_drop("plank", Vector2i(1, 1)), "planks only go on the void")
-	_check(b.drop("plank", Vector2i(2, 1)) and b.items.is_empty(), "plank bridges the void")
+	b = _board(["######", "#@-_D#", "######"])
+	_check(b.move(Vector2i.RIGHT) == ["step", "pickup"] and b.items == ["plank"] and b.cell(Vector2i(2, 1)) == Board.FLOOR, "walking on a plank picks it up")
+	_check(b.move(Vector2i.RIGHT) == ["drop"] and b.pos == Vector2i(2, 1) and b.items.is_empty(), "walking into a hole with a plank lays it")
+	_check(b.cell(Vector2i(3, 1)) == Board.BRIDGE and b.move(Vector2i.RIGHT) == ["step"], "a laid plank is a bridge")
+	b = _board(["#####", "#@_D#", "#####"])
+	b.move(Vector2i.RIGHT)
+	_check(b.lost, "without a plank, you fall")
+	b = _board(["######", "#k@LD#", "######"])
+	_check(b.move(Vector2i.RIGHT) == ["locked"], "a locked door needs the key")
+	b.move(Vector2i.LEFT)
+	b.move(Vector2i.RIGHT)
+	_check(b.move(Vector2i.RIGHT) == ["unlock"] and b.cell(Vector2i(3, 1)) == Board.DOOR and b.items.is_empty(), "walking into it with the key opens it")
+	b = _board(["#######", "#@k-.#", "#######"])
+	var other := _board(["#######", "#@k-.#", "#######"])
+	b.items.assign(["plank", "key"])
+	other.items.assign(["key", "plank"])
+	_check(b.state_key() == other.state_key(), "the bag's order does not matter")
 
 	b = Board.from_level({"rooms": {"a": ["###", "#@1", "###"], "b": ["#####", "#1.D#", "#####"]}})
 	b.move(Vector2i.RIGHT)
 	_check(b.room == "b" and b.pos == Vector2i(1, 1), "portals link rooms")
+
+	b = _board(["#######", "#@iii.#", "#######"])
+	b.move(Vector2i.RIGHT)
+	_check(b.pos == Vector2i(5, 1), "ice slides you to the first cell that is not ice")
+	b = _board(["######", "#@ii##", "######"])
+	_check(b.move(Vector2i.RIGHT) == ["step", "slide"] and b.pos == Vector2i(3, 1), "a slide stops against a wall, on the ice")
+	b = _board(["######", "#@ii_#", "######"])
+	b.move(Vector2i.RIGHT)
+	_check(b.lost, "sliding into a hole is a fall")
+
+	b = _board(["######", "#@o.#", "######"])
+	_check(b.move(Vector2i.RIGHT) == ["push", "step"] and b.has_crate(Vector2i(3, 1)) and b.pos == Vector2i(2, 1), "crates are pushed one cell")
+	_check(b.move(Vector2i.RIGHT) == ["crate_blocked"] and b.pos == Vector2i(2, 1), "a crate against a wall does not move")
+	b = _board(["######", "#@oo.#", "######"])
+	_check(b.move(Vector2i.RIGHT) == ["crate_blocked"], "two crates in a row are too heavy")
+	b = _board(["######", "#@o_D#", "######"])
+	_check("crate_fill" in b.move(Vector2i.RIGHT) and b.cell(Vector2i(3, 1)) == Board.FILLED and not b.has_crates(), "a crate pushed into a hole fills it")
+	b = _board(["#######", "#@oii.#", "#######"])
+	b.move(Vector2i.RIGHT)
+	_check(b.has_crate(Vector2i(5, 1)), "crates slide on ice")
+	b = _board(["#####", "#@o^#", "#####"])
+	_check(b.move(Vector2i.RIGHT) == ["crate_blocked"], "crates do not go on stairs")
+	b = _board(["######", "#@.o^#", "######"])
+	b.move(Vector2i.RIGHT)
+	_check(b.cell(Vector2i(4, 1)) == ">", "a crate hides the stairs behind it")
+
+	b = _board(["######", "#@f.D#", "######"])
+	_check(b.move(Vector2i.RIGHT) == ["step"] and b.pos == Vector2i(2, 1), "cracked floor holds you")
+	_check(b.move(Vector2i.RIGHT) == ["step", "crumble"] and b.cell(Vector2i(2, 1)) == Board.VOID and b.crumbled == Vector2i(2, 1), "it falls in once you leave it")
+	_check(Solver.solve(b) != null and Solver.solve(_stuck_after_crumble()) == null, "no way back over it")
+
+	b = _board(["#######", "#@yus.#", "#######"])
+	_check(b.move(Vector2i.RIGHT) == ["block"] and b.watched_cells().size() == 1, "yellow blocks stand up at first, and hide what is behind")
+	b = _board(["#######", "#.s@yu#", "#######"])
+	_check(b.move(Vector2i.LEFT) == ["step", "toggle"] and b.switched, "a switch flips the blocks")
+	b.move(Vector2i.RIGHT)
+	_check(b.move(Vector2i.RIGHT) == ["step"] and b.move(Vector2i.RIGHT) == ["block"], "yellow down, purple up")
+	var flipped := _board(["#######", "#.s@yu#", "#######"])
+	flipped.move(Vector2i.LEFT)
+	flipped.move(Vector2i.RIGHT)
+	_check(flipped.state_key() != _board(["#######", "#.s@yu#", "#######"]).state_key(), "the switch is part of the state")
+
+	b = _board(["######", "#@pg.#", "######"])
+	_check(not b.gates_open(), "gates are closed while their button is up")
+	_check(b.move(Vector2i.RIGHT) == ["step", "gates_open"], "standing on the button opens the gates")
+	_check(b.move(Vector2i.RIGHT) == ["step", "gates_shut"] and b.pos == Vector2i(3, 1), "you can walk into an open gate")
+	_check(b.move(Vector2i.RIGHT) == ["step"], "and out of it, even closed")
+	b = _board(["######", "#@.g.#", "######"])
+	_check(b.move(Vector2i.RIGHT) == ["step"] and b.move(Vector2i.RIGHT) == ["gate_closed"], "closed gates block")
+	b = _board(["#######", "#@op#g#", "#..##.#", "#######"])
+	_check("gates_open" in b.move(Vector2i.RIGHT) and b.gates_open(), "a crate on the button keeps the gates open")
+
+
+## A dead end behind cracked floor: once in, the door is out of reach.
+func _stuck_after_crumble() -> Board:
+	var b := _board(["#######", "#D.@f.#", "#######"])
+	b.move(Vector2i.RIGHT)
+	b.move(Vector2i.RIGHT)
+	return b
 
 
 func _test_solver() -> void:
@@ -78,7 +151,7 @@ func _test_solver() -> void:
 	_check(Solver.next_action(b, ["fake_wall"]) == "R", "next action follows the allowed route")
 	var stuck := _board(["#####", "#@_D#", "#####"])
 	_check(Solver.next_action(stuck) == "", "no next action when stuck")
-	_check(Solver.next_action(_board(["#####", "#@_D#", "#####"], ["plank"])) == "plank@2,1", "next action can be a drop")
+	_check(Solver.solve(_board(["#######", "#-#@_D#", "#.#.###", "#...###", "#######"])).size() == 15, "the solver fetches the plank first")
 	_check(Levels.goal({"par": 10}) == 12 and Levels.goal({"par": 30}) == 36, "the goal leaves a little slack")
 	_check(Levels.stars({"par": 10}, 12, false) == 3 and Levels.stars({"par": 10}, 20, false) == 2 and Levels.stars({"par": 10}, 21, false) == 1, "star thresholds")
 	_check(Levels.stars({"par": 10}, 8, true) == 2, "the bulb's help caps stars at 2")
@@ -129,9 +202,6 @@ func _test_generator() -> void:
 					var known: String = "^" if Board.ARROWS.has(ch) else ch
 					if not (learned.has(known) or ch in [Board.START, Board.WALL, Board.FLOOR, Board.DOOR]):
 						unknown.append(ch)
-			for item in level["items"]:
-				if not learned.has(item):
-					unknown.append(item)
 			_check(unknown.is_empty(), "%s only uses known rules (unknown: %s)" % [name, unknown])
 	var run := DreamRun.new(everything, true)
 	var first := run.take()

@@ -9,10 +9,12 @@ const START_LINES := ["~Celui-ci est super facile.", "Trouve la porte ! Hi hi !"
 const HINTS := {
 	"paint": "La couleur de l'écran change le sens de tes glissements.",
 	"stairs": "Un escalier que tu regardes ne tourne pas.",
-	"plank": "La planche, en haut, comble un trou.",
-	"key": "La clé se glisse sur la porte grise.",
+	"plank": "Ramasse la planche, puis avance vers le trou pour la poser.",
+	"key": "Ramasse la clé, puis avance contre la porte grise.",
 	"chalk": "Une porte à la craie s'ouvre quand tu la touches.",
 	"decoy": "Attention : certaines portes sont des dessins !",
+	"ice": "Sur la glace, tu glisses jusqu'à ce que quelque chose t'arrête.",
+	"crate": "Pousse la caisse dans le trou : elle fait un pont.",
 }
 const DIRS: Array[Vector2i] = [Vector2i.UP, Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT]
 const MAX_ATTEMPTS := 12
@@ -50,7 +52,7 @@ static func make(seed_value: int, depth: int, learned: Dictionary) -> Dictionary
 	return best
 
 
-## [level, how many bypassable mechanics (paint, stairs) the route should use]
+## [level, how many bypassable mechanics (paint, stairs, ice, crate) the route should use]
 static func _build(rng: RandomNumberGenerator, depth: int, learned: Dictionary) -> Array:
 	var cw := 2 + int(depth >= 2) + int(depth >= 6 and rng.randf() < 0.6)
 	var ch := 3 + int(depth >= 4) + int(depth >= 9 and rng.randf() < 0.6)
@@ -124,11 +126,14 @@ static func _build(rng: RandomNumberGenerator, depth: int, learned: Dictionary) 
 		pool.append("stairs")
 	if learned.has("_"):
 		pool.append("void")
-	if learned.has("c") or learned.has("key"):
+	if learned.has(Board.CHALK_DOOR) or learned.has(Board.KEY):
 		pool.append("exit")
+	if learned.has(Board.ICE):
+		pool.append("ice")
+	if learned.has(Board.CRATE):
+		pool.append("crate")
 	_shuffle(pool, rng)
 	var chosen := pool.slice(0, mini(1 + depth / 3, 4))
-	var items: Array[String] = []
 	var hints := []
 	var wanted := 0
 	var used_cells := {start: true}
@@ -164,23 +169,51 @@ static func _build(rng: RandomNumberGenerator, depth: int, learned: Dictionary) 
 					if not used_cells.has(cell) and not cell in path:
 						used_cells[cell] = true
 						grid[cell.y][cell.x] = Board.VOID
-				if learned.has("plank") and rng.randf() < 0.6:
+				if learned.has(Board.PLANK) and rng.randf() < 0.6:
 					var cell := _free_cell(path, 2, path.size() - 1, used_cells, rng)
 					if cell.x >= 0:
 						grid[cell.y][cell.x] = Board.VOID
-						items.append("plank")
-						hints.append(HINTS.plank)
+						var plank := _off_path(floors, path, came_from, used_cells, cell, rng)
+						if plank.x >= 0:
+							grid[plank.y][plank.x] = Board.PLANK
+							hints.append(HINTS.plank)
 			"exit":
 				var kinds := []
-				if learned.has("c"):
+				if learned.has(Board.CHALK_DOOR):
 					kinds.append("chalk")
-				if learned.has("key"):
+				if learned.has(Board.KEY):
 					kinds.append("key")
 				var kind: String = kinds[rng.randi() % kinds.size()]
-				grid[exit_cell.y][exit_cell.x] = Board.CHALK_DOOR if kind == "chalk" else Board.LOCKED_DOOR
-				if kind == "key":
-					items.append("key")
-				hints.append(HINTS[kind])
+				var key := _off_path(floors, path, came_from, used_cells, exit_cell, rng) if kind == "key" else Vector2i(-1, -1)
+				if kind == "chalk" or key.x >= 0:
+					grid[exit_cell.y][exit_cell.x] = Board.CHALK_DOOR if kind == "chalk" else Board.LOCKED_DOOR
+					if key.x >= 0:
+						grid[key.y][key.x] = Board.KEY
+					hints.append(HINTS[kind])
+			"ice":  # a frozen patch around a cell of the path
+				var center := _free_cell(path, 2, path.size() - 2, used_cells, rng)
+				if center.x >= 0:
+					for dy in range(-1, 2):
+						for dx in range(-1, 2):
+							var q := center + Vector2i(dx, dy)
+							if q != start and not used_cells.has(q) and grid[q.y][q.x] == Board.FLOOR:
+								grid[q.y][q.x] = Board.ICE
+					wanted += 1
+					hints.append(HINTS.ice)
+			"crate":  # on a straight stretch of the path: a crate, then a hole to push it into
+				var spots := []
+				for i in range(1, path.size() - 2):
+					var straight := path[i + 1] - path[i] == path[i + 2] - path[i + 1]
+					if straight and not (used_cells.has(path[i + 1]) or used_cells.has(path[i + 2])):
+						spots.append(i)
+				if not spots.is_empty():
+					var i: int = spots[rng.randi() % spots.size()]
+					for k in [1, 2]:
+						used_cells[path[i + k]] = true
+					grid[path[i + 1].y][path[i + 1].x] = Board.CRATE
+					grid[path[i + 2].y][path[i + 2].x] = Board.VOID
+					wanted += 1
+					hints.append(HINTS.crate)
 
 	if learned.has("d"):  # painted doors: they look exactly like the way out
 		for k in 1 + int(rng.randf() < 0.4):
@@ -200,7 +233,6 @@ static func _build(rng: RandomNumberGenerator, depth: int, learned: Dictionary) 
 	var level := {
 		"title": TITLES[rng.randi() % TITLES.size()],
 		"par": 0,
-		"items": items,
 		"hints": hints,
 		"say": {"start": START_LINES[rng.randi() % START_LINES.size()]},
 		"dark": learned.has("dark") and depth >= 4 and rng.randf() < 0.3,
@@ -209,20 +241,23 @@ static func _build(rng: RandomNumberGenerator, depth: int, learned: Dictionary) 
 	return [level, wanted]
 
 
-## Paint stepped on, stairs climbed: how many bypassable mechanics the route really uses.
+## Paint stepped on, stairs climbed, ice slid on, a hole filled with a crate:
+## how many bypassable mechanics the route really uses.
 static func _mechanics_used(level: Dictionary, route: Array) -> int:
 	var b := Board.from_level(level)
-	var tinted := false
-	var climbed := false
+	var seen := {}
 	for action in route:
 		if Solver.DIRS.has(action):
 			var on_stairs := Board.ARROWS.has(b.cell(b.pos + b.steer(Solver.DIRS[action])))
 			var events := b.move(Solver.DIRS[action])
-			climbed = climbed or (on_stairs and "step" in events)
-			tinted = tinted or "tint" in events
+			if on_stairs and "step" in events:
+				seen.climbed = true
+			for event in ["tint", "slide", "crate_fill"]:
+				if event in events:
+					seen[event] = true
 		else:
 			Solver.apply(b, action)
-	return int(tinted) + int(climbed)
+	return seen.size()
 
 
 ## Breadth-first over plain floor: cell -> the cell it was reached from.
@@ -246,6 +281,20 @@ static func _path(came_from: Dictionary, to: Vector2i) -> Array[Vector2i]:
 	while came_from[path[0]] != path[0]:
 		path.push_front(came_from[path[0]])
 	return path
+
+
+## Where to leave an item: a free floor cell off the obvious path (a detour to fetch it),
+## reached from the start without crossing `before`. (-1, -1) if none.
+static func _off_path(floors: Array[Vector2i], path: Array[Vector2i], came_from: Dictionary, used: Dictionary, before: Vector2i, rng: RandomNumberGenerator) -> Vector2i:
+	var options := []
+	for cell in floors:
+		if not (used.has(cell) or cell in path) and came_from.has(cell) and not before in _path(came_from, cell):
+			options.append(cell)
+	if options.is_empty():
+		return Vector2i(-1, -1)
+	var cell: Vector2i = options[rng.randi() % options.size()]
+	used[cell] = true
+	return cell
 
 
 ## A random path cell between indices `from` and `to`, not used yet; (-1, -1) if none.

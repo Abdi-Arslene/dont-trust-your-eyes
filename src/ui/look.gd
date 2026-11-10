@@ -20,13 +20,24 @@ const THEMES := [
 	{"name": "forêt", "bg": [Color("a7f3d0"), Color("5eead4")], "floor": [Color("f0fdfa"), Color("d5f8ee")], "wall": [Color("19907f"), Color("115e59")], "ink": INK},
 	{"name": "nuit", "bg": [Color("312e81"), Color("1e1b4b")], "floor": [Color("4a479a"), Color("434090")], "wall": [Color("8b93f8"), Color("6366f1")], "ink": Color("f5f3ff")},
 	{"name": "palais", "bg": [Color("fbcfe8"), Color("c4b5fd")], "floor": [Color("fdf2f8"), Color("fbe6f1")], "wall": [Color("f05aa0"), Color("be185d")], "ink": INK},
+	{"name": "glace", "bg": [Color("e0f2fe"), Color("a5d8ff")], "floor": [Color("f8fcff"), Color("eef6fc")], "wall": [Color("74a9d8"), Color("4a7fb5")], "ink": INK},
+	{"name": "atelier", "bg": [Color("fef3c7"), Color("fcd5a5")], "floor": [Color("fffaf0"), Color("fdf0dc")], "wall": [Color("a1887f"), Color("795548")], "ink": INK},
+	{"name": "machines", "bg": [Color("ccfbf1"), Color("a7c7e7")], "floor": [Color("f5fbfa"), Color("e6f2f0")], "wall": [Color("5fa8a0"), Color("3d7a74")], "ink": INK},
+	{"name": "fissures", "bg": [Color("e7e5e4"), Color("d6c7b0")], "floor": [Color("fafaf9"), Color("f1ede6")], "wall": [Color("a8a29e"), Color("78716c")], "ink": INK},
+	{"name": "pièges", "bg": [Color("e9d5ff"), Color("fda4af")], "floor": [Color("fdf4ff"), Color("f8e8f6")], "wall": [Color("a855f7"), Color("7e22ce")], "ink": INK},
+	{"name": "bascule", "bg": [Color("fef9c3"), Color("e9d5ff")], "floor": [Color("fffef5"), Color("faf6ff")], "wall": [Color("6d6875"), Color("4a4458")], "ink": INK},
+	{"name": "mélange", "bg": [Color("cffafe"), Color("bbf7d0")], "floor": [Color("f7fffd"), Color("eafaf3")], "wall": [Color("0ea5a4"), Color("0f766e")], "ink": INK},
+	{"name": "revanche", "bg": [Color("fed7aa"), Color("f9a8d4")], "floor": [Color("fff7ed"), Color("ffeede")], "wall": [Color("f97362"), Color("c2410c")], "ink": INK},
 ]
 
 static var _font: Font
+static var _weights := {}  # weight -> FontVariation, made once
 
 
 ## Fredoka (rounded, easy to read), with the system font behind it for any missing glyph.
 static func font(weight := 600) -> Font:
+	if _weights.has(weight):
+		return _weights[weight]
 	if _font == null:
 		var file: FontFile = load(FONT_PATH)
 		file.fallbacks = [SystemFont.new()]
@@ -34,6 +45,7 @@ static func font(weight := 600) -> Font:
 	var variation := FontVariation.new()
 	variation.base_font = _font
 	variation.variation_opentype = {TextServerManager.get_primary_interface().name_to_tag("wght"): weight}
+	_weights[weight] = variation
 	return variation
 
 

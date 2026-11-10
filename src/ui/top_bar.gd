@@ -1,7 +1,7 @@
 class_name TopBar
 extends VBoxContainer
 ## Level header. Row 1: levels, title, hint eye, restart.
-## Row 2: the items you can drag into the level, and the move counter.
+## Row 2: what Pico carries (picked up in the level), and the move counter.
 
 signal menu_pressed
 signal hint_pressed
@@ -126,16 +126,6 @@ func set_items(items: Array) -> void:
 		chip.queue_free()
 	for item in items:
 		_items.add_child(ItemChip.new(item))
-
-
-func highlight_item(item: String) -> void:
-	for chip in _items.get_children():
-		chip.highlighted = chip.item == item
-
-
-func clear_highlights() -> void:
-	for chip in _items.get_children():
-		chip.highlighted = false
 
 
 func pulse_hint(on: bool) -> void:

@@ -14,7 +14,7 @@ Le jeu repose sur des « aha ». Seuls de vrais enfants disent s'ils arrivent, e
 - Questions à trancher :
   - Le niveau 15 (*Le balcon*) est-il trop dur, même placé tard ? C'est le casse-tête le plus difficile.
   - La révélation du niveau 19 marche-t-elle ? Le joueur pense-t-il de lui-même au niveau 1 ?
-  - Comprennent-ils seuls que le sac en haut de l'écran se glisse dans le niveau (niveau 9) ?
+  - Comprennent-ils seuls qu'il faut ramasser la planche, puis avancer vers le trou pour la poser (niveau 9) ?
   - Le noir (16–18) est-il frustrant ou intrigant ?
 - Mesure simple : temps par niveau, nombre de chutes, utilisation de l'ampoule. **Pas d'analytics tiers** dans un jeu pour enfants sans vérifier qu'ils respectent les règles enfants des stores (voir 6) : le plus simple est de ne rien collecter.
 
@@ -72,6 +72,6 @@ Le format JSON et le solveur permettent d'ajouter des niveaux vite. Idées de m�
 
 ## 8. Technique
 
-- Le solveur tient bien aujourd'hui (moins d'une seconde par niveau). Si un futur niveau a beaucoup d'escaliers et de pièces, surveille le temps de l'ampoule ; un **A\*** remplacerait facilement le BFS.
+- Le solveur est un **A\*** guidé par la distance à la sortie (exact : il trouve toujours la solution la plus courte) sur un plateau dont seules les parties qui changent sont copiées. Les 53 niveaux se résolvent en 2 s au total sur PC (le plus long, « Caisse de secours », en 0,25 s), et un rêve se génère en ~0,1 s en moyenne (8 fois plus vite qu'avant). Si un futur niveau a beaucoup d'escaliers et de pièces (pas de guidage possible entre plusieurs pièces ou sur la glace), surveille le temps de l'ampoule.
 - **Sauvegarde cloud** (Google Play Games / Game Center) : utile une fois le jeu publié.
 - Garde la règle : **tout niveau ajouté passe les tests** (`run_tests` + `smoke_test`) avant d'être publié.

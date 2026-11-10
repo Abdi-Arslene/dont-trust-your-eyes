@@ -41,6 +41,14 @@ static func chapters() -> Array:
 	return result
 
 
+## The level that ends the story (the first with "ending": true). Chapters after it are bonus.
+static func story_end() -> int:
+	for i in all().size():
+		if all()[i].get("ending", false):
+			return i
+	return all().size() - 1
+
+
 static func secret_count() -> int:
 	return all().filter(func(l): return l.get("secret", false)).size()
 

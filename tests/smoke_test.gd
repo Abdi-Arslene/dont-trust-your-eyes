@@ -37,6 +37,26 @@ func _run() -> void:
 		var fills_screen: bool = game.size == main.size and game._view.tile > 30.0
 		_report("%2d %-14s" % [i + 1, levels[i].id], fills_screen and game._board.won and game._win.visible)
 
+	# Cracked floor: wander into a dead end, it falls in behind, Filou sees you are stuck.
+	main._play(levels.map(func(l): return l.id).find("dark"))
+	await _wait(0.6)
+	var trapped = main._screen
+	for dir in [Vector2i.RIGHT, Vector2i.RIGHT, Vector2i.DOWN, Vector2i.DOWN, Vector2i.RIGHT, Vector2i.RIGHT, Vector2i.RIGHT, Vector2i.RIGHT, Vector2i.UP, Vector2i.UP]:
+		trapped._on_swipe(dir)
+		await process_frame
+	await _wait(0.5)
+	_report("stuck for good", trapped._stuck and not trapped._board.lost)
+
+	# The story ends after its last level; the bonus chapters have their own ending.
+	main._after_level(Levels.story_end())
+	await _wait(0.6)
+	var ending = main._screen
+	_report("story ending", ending.get_script().get_global_name() == "Ending" and not ending.final)
+	main._after_level(levels.size() - 1)
+	await _wait(0.6)
+	ending = main._screen
+	_report("final ending", ending.get_script().get_global_name() == "Ending" and ending.final)
+
 	# The bulb: two written hints, then it points at the next move (computed on a thread).
 	main._play(levels.map(func(l): return l.id).find("top_bar"))
 	await _wait(0.6)
@@ -44,7 +64,8 @@ func _run() -> void:
 	for k in 3:
 		game._on_hint()
 	await _wait(0.5)
-	_report("hint bulb", game._view._hint_swipe == Vector2i.RIGHT and game._hinted)
+	var first_move: Vector2i = Solver.DIRS[Solver.par_route(Board.from_level(game._level))[0]]
+	_report("hint bulb", game._view._hint_swipe == first_move and game._hinted)
 
 	# Daily challenge: generated, played, streak counted.
 	main._start_daily()
@@ -110,11 +131,7 @@ func _run() -> void:
 
 func _play_route(game) -> void:
 	for action in Solver.par_route(Board.from_level(game._level)):
-		if Solver.is_drop(action):
-			var drop := Solver.parse_drop(action)
-			game._on_item_dropped(drop[0], game._view.cell_to_global(drop[1]))
-		else:
-			game._on_swipe(Solver.DIRS[action])
+		game._on_swipe(Solver.DIRS[action])
 		await process_frame
 	await _wait(1.0)
 

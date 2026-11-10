@@ -1,35 +1,64 @@
 class_name Solver
 extends RefCounted
-## Breadth-first search over board states. Proves levels can be finished,
-## gives their par, and powers the in-game "show me the next move" hint.
+## Shortest-route search over board states (A*, guided by Board.estimate()).
+## Proves levels can be finished, gives their par, and powers the in-game
+## "show me the next move" hint.
 
 const DIRS := {"U": Vector2i.UP, "R": Vector2i.RIGHT, "D": Vector2i.DOWN, "L": Vector2i.LEFT}
 
 
-## Shortest list of actions ("U", "R", "plank@3,4"...) or null if unsolvable.
+## Shortest list of actions ("U", "R", "D", "L") or null if unsolvable.
 ## Actions that trigger any event in `forbid` (e.g. "fake_wall") are not explored.
+## The estimate never overshoots and changes by at most 1 per action, so the
+## first winning action found ends a shortest route.
 static func solve(start: Board, forbid: Array = [], max_states := 300000) -> Variant:
-	var queue: Array = [[start, []]]
-	var seen := {start.state_key(): true}
-	var head := 0
-	while head < queue.size() and seen.size() < max_states:
-		var board: Board = queue[head][0]
-		var path: Array = queue[head][1]
-		head += 1
-		for action in _actions(board):
+	# Each state keeps its parent and the action that led to it: no path copies.
+	var boards: Array[Board] = [start]
+	var parents := PackedInt32Array([-1])
+	var actions := PackedStringArray([""])
+	var costs := PackedInt32Array([0])
+	var best := {start.state_key(): 0}  # state -> fewest actions found to reach it
+	var open: Array[Array] = []  # open[f]: states whose cost + estimate is f
+	_push(open, start.estimate(), 0)
+	var f := 0
+	while f < open.size() and best.size() < max_states:
+		if open[f].is_empty():
+			f += 1
+			continue
+		var node: int = open[f].pop_back()
+		var board := boards[node]
+		boards[node] = null  # explored: free it
+		var cost := costs[node] + 1
+		for action in DIRS:
 			var next := board.clone()
 			var events := apply(next, action)
-			if forbid.any(func(e): return e in events):
+			if events.is_empty() or (not forbid.is_empty() and forbid.any(func(e): return e in events)):
 				continue
 			if next.won:
-				return path + [action]
+				var route := [action]
+				var i := node
+				while parents[i] != -1:
+					route.push_front(actions[i])
+					i = parents[i]
+				return route
 			if next.lost:
 				continue
 			var key := next.state_key()
-			if not seen.has(key):
-				seen[key] = true
-				queue.append([next, path + [action]])
+			if best.get(key, cost + 1) <= cost:
+				continue
+			best[key] = cost
+			_push(open, cost + next.estimate(), boards.size())
+			boards.append(next)
+			parents.append(node)
+			actions.append(action)
+			costs.append(cost)
 	return null
+
+
+static func _push(open: Array[Array], f: int, node: int) -> void:
+	while open.size() <= f:
+		open.append([])
+	open[f].append(node)
 
 
 ## The par route: avoids fake walls when the level can be done without them.
@@ -46,37 +75,5 @@ static func next_action(board: Board, forbid: Array = []) -> String:
 	return route[0] if route != null and not route.is_empty() else ""
 
 
-static func is_drop(action: String) -> bool:
-	return "@" in action
-
-
-## "plank@3,4" -> ["plank", Vector2i(3, 4)]
-static func parse_drop(action: String) -> Array:
-	var parts := action.split("@")
-	var xy := parts[1].split(",")
-	return [parts[0], Vector2i(int(xy[0]), int(xy[1]))]
-
-
 static func apply(board: Board, action: String) -> Array[String]:
-	if DIRS.has(action):
-		return board.move(DIRS[action])
-	var drop := parse_drop(action)
-	var events: Array[String] = []
-	if board.drop(drop[0], drop[1]):
-		events.append("drop")
-	return events
-
-
-static func _actions(board: Board) -> Array:
-	var actions: Array = DIRS.keys()
-	var grid: Array = board.rooms[board.room]
-	for item in board.items:
-		if not Board.ITEM_TARGETS.has(item):
-			continue
-		var target: String = Board.ITEM_TARGETS[item][0]
-		for y in grid.size():
-			var x: int = grid[y].find(target)
-			while x != -1:
-				actions.append("%s@%d,%d" % [item, x, y])
-				x = grid[y].find(target, x + 1)
-	return actions
+	return board.move(DIRS[action])

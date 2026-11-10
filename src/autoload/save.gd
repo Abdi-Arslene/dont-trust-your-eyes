@@ -16,6 +16,7 @@ var best_dreams := 0  # most dreams crossed in one run
 var best_survival := 0  # most levels crossed in one survival run
 var falls := 0
 var painted := 0  # times a painted door was believed
+var pushes := 0  # crates pushed
 var skin := "classic"
 var skins_seen := {}  # skin id -> true once announced
 var sound := true
@@ -25,7 +26,7 @@ var haptics := true
 const _KEYS := {
 	"progress": ["results", "secrets", "walls_revealed"],
 	"modes": ["daily", "last_daily", "streak", "best_streak", "best_dreams", "best_survival"],
-	"collection": ["falls", "painted", "skin", "skins_seen"],
+	"collection": ["falls", "painted", "pushes", "skin", "skins_seen"],
 	"settings": ["sound", "music", "haptics"],
 }
 
@@ -143,18 +144,20 @@ func stats() -> Dictionary:
 	return {
 		"stars": total_stars(),
 		"all_stars": int(total_stars() >= levels.size() * 3),
-		"story": int(is_done(levels[-1].id)),
+		"story": int(is_done(levels[Levels.story_end()].id)),
+		"revenge": int(is_done(levels[-1].id)),
 		"secrets": secrets.size(),
 		"streak": best_streak,
 		"dreams": best_dreams,
 		"falls": falls,
 		"painted": painted,
+		"pushes": pushes,
 	}
 
 
-## Counts a fall or a painted door believed.
-func count(stat: String) -> void:
-	set(stat, get(stat) + 1)
+## Counts falls, painted doors believed, crates pushed.
+func count(stat: String, amount := 1) -> void:
+	set(stat, get(stat) + amount)
 	_changed()
 
 

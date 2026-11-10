@@ -1,8 +1,11 @@
 class_name Ending
 extends Control
-## After the last door: Pico celebrates, Filou sulks, then admits defeat.
+## After the last door of the story (and again after his revenge): Pico celebrates,
+## Filou sulks, then admits defeat.
 
 signal done
+
+var final := false  # the very last level, not the end of the story
 
 
 func _ready() -> void:
@@ -47,13 +50,22 @@ func _ready() -> void:
 	menu.pressed.connect(done.emit)
 	box.add_child(menu)
 
+	var score := "%d étoiles sur %d. %d passages secrets sur %d." % [Save.total_stars(), Levels.all().size() * 3, Save.secrets.size(), Levels.secret_count()]
 	var lines := [
 		"Grrr... Tu as franchi ma dernière porte !",
 		"~Bon. Je n'ai jamais menti, de toute façon.",
-		"%d étoiles sur %d. %d passages secrets sur %d." % [Save.total_stars(), Levels.all().size() * 3, Save.secrets.size(), Levels.secret_count()],
-		"Mes vieux niveaux cachent encore des passages secrets... Hi hi !",
+		score,
+		"Mais j'ai encore des farces : un lac gelé, des caisses, des boutons... Hi hi !",
 		"Et mes rêves sans fin t'attendent. Reviens jouer !",
 	]
+	if final:
+		lines = [
+			"Grrr... Même ma revanche n'a pas marché !",
+			"~Je t'ai laissé gagner. Exprès.",
+			score,
+			"Mes vieux niveaux cachent encore des passages secrets... Hi hi !",
+			"Et mes rêves sans fin t'attendent. Reviens jouer !",
+		]
 	var t := create_tween()
 	for line in lines:
 		t.tween_callback(narrator.say.bind(line))
