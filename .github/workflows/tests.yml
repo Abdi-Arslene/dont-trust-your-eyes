@@ -1,0 +1,33 @@
+# Rule tests and the full UI run (every level played) on each push.
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  GODOT_VERSION: 4.5.1
+
+jobs:
+  tests:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Godot
+        run: |
+          curl -sSfL -o godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q godot.zip -d "$RUNNER_TEMP"
+          mkdir -p "$HOME/bin"
+          mv "$RUNNER_TEMP/Godot_v${GODOT_VERSION}-stable_linux.x86_64" "$HOME/bin/godot"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Import the project
+        run: godot --headless --import
+
+      - name: Rule and level tests
+        run: godot --headless -s tests/run_tests.gd
+
+      - name: Every level through the real interface
+        run: godot --headless -s tests/smoke_test.gd

@@ -2,7 +2,7 @@
 
 > Ne crois pas tes yeux ! Un jeu de réflexion pour enfants (8-9 ans et plus).
 
-Puzzle mobile (Android + iOS) : Pico doit sortir de la maison de Filou, un lutin farceur qui change les règles, dessine de fausses portes, éteint la lumière… et ment (son nez grandit). 22 niveaux en 7 actes, puis un défi par jour, des rêves à l'infini, un mode survie où chaque pas use l'énergie, et 12 costumes à collectionner.
+Puzzle mobile (Android + iOS) : Pico doit sortir de la maison de Filou, un lutin farceur qui change les règles, dessine de fausses portes, éteint la lumière… et ment (son nez grandit). 22 niveaux en 7 actes, puis la revanche de Filou (lac gelé, caisses à pousser, boutons et grilles, sol qui s'effondre, interrupteurs) : 53 niveaux en tout. Ensuite un défi par jour, des rêves à l'infini, un mode survie où chaque pas use l'énergie, et 14 costumes à collectionner.
 
 - Mécaniques et progression : [docs/GAME_DESIGN.md](docs/GAME_DESIGN.md)
 - Créer un niveau : [docs/LEVELS.md](docs/LEVELS.md)
@@ -16,7 +16,7 @@ Moteur : **Godot 4.5** (GDScript), renderer *Compatibility* (OpenGL ES 3, le plu
 ```
 project.godot            config (portrait 720×1280, autoloads Save + Sfx)
 scenes/main.tscn         scène unique, point d'entrée
-levels/levels.json       les 22 niveaux (format : docs/LEVELS.md)
+levels/levels.json       les 53 niveaux (format : docs/LEVELS.md)
 src/
   core/                  logique pure, sans affichage (testable)
     board.gd             RÈGLES du jeu — le cœur
@@ -27,7 +27,7 @@ src/
     game.gd              chef d'orchestre : input → règles → vue, sons, narrateur, score, aide (modes histoire / défi / rêve)
     dream_run.gd         partie infinie (rêves : vies, survie : énergie), génération du niveau suivant en fond
     board_view.gd        dessin + animations (particules, noir, escaliers qui tournent…)
-    swipe_area.gd        glissements de doigt + dépôt d'objets
+    swipe_area.gd        glissements de doigt (garder le doigt = avancer tout seul)
   ui/                    look (couleurs, police), Pico et ses costumes (skins), Filou, barre du haut, bulle, victoire, cartes du menu, réglages…
   screens/               main (navigation + fondus), menu, choix des niveaux, costumes, attente de génération, fin
   autoload/
@@ -35,7 +35,7 @@ src/
     sfx.gd               sons/musique synthétisés + vibrations (Sfx)
 tests/
   run_tests.gd           règles + chaque niveau faisable, par/secret du JSON vérifiés
-  smoke_test.gd          joue les 22 niveaux via la vraie interface, l'ampoule, le défi du jour, une partie de rêves, les costumes
+  smoke_test.gd          joue les 53 niveaux via la vraie interface, l'ampoule, le défi du jour, une partie de rêves, les costumes
 tools/
   export_release.ps1     build signé pour le Play Store (.aab)
   store_art.gd           dessine les icônes et la bannière du store avec le code du jeu
@@ -56,7 +56,7 @@ Ajouter une mécanique = une case dans `board.gd`, son dessin dans `board_view.g
 ```sh
 godot --headless --import                # une fois (enregistre les classes)
 godot --headless -s tests/run_tests.gd   # règles, solvabilité, par et secrets du JSON, générateur
-godot --headless -s tests/smoke_test.gd  # 22 niveaux, l'ampoule, défi du jour, rêves, costumes
+godot --headless -s tests/smoke_test.gd  # 53 niveaux, l'ampoule, défi du jour, rêves, costumes
 ```
 
 Après avoir modifié un niveau, `run_tests` dit si son `par` (objectif) ou son `secret` ne correspondent plus, et donne la bonne valeur.
@@ -74,5 +74,6 @@ Après avoir modifié un niveau, `run_tests` dit si son `par` (objectif) ou son 
    L'export Godot relance le serveur adb : si `adb` dit « device offline », faire `adb kill-server && adb start-server`.
 4. Émulateur : lancer avec `-gpu host` (le GPU logiciel par défaut ne compile pas les shaders de Godot → écran noir).
 5. Play Store : `powershell -ExecutionPolicy Bypass -File tools/export_release.ps1` → `build/dont-trust-your-eyes.aab` (préréglage « Android Play » : Gradle, API 36, signé avec la clé d'envoi gardée hors du dépôt). Tout est dans [docs/PLAY_STORE.md](docs/PLAY_STORE.md).
+6. Publication automatique : un tag `v1.2.3` poussé sur GitHub teste le jeu, construit le `.aab` et l'APK, et envoie la version sur le test fermé de Google Play (`.github/workflows/release.yml`, mise en place dans [docs/PLAY_STORE.md](docs/PLAY_STORE.md#7-publication-automatique-github-actions)).
 
 **iOS** (Mac obligatoire, imposé par Apple) : Xcode + compte Apple Developer, preset iOS avec *Team ID* et identifiant, puis archive Xcode.

@@ -1,0 +1,141 @@
+# Publishes a new version on Google Play (see docs/PLAY_STORE.md, "Publication automatique").
+# A tag v1.2.3 tests the game, builds the signed .aab (version 1.2.3, code 10203) and the
+# shareable APK, sends the .aab to the closed test track and attaches the APK to a GitHub release:
+#   git tag v1.2.3 && git push origin v1.2.3
+# It can also be started by hand (Actions > Publier sur Google Play), to choose another track.
+name: Publier sur Google Play
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version (ex. 1.2.3), plus grande que la dernière envoyée"
+        required: true
+      track:
+        description: "Piste Google Play : alpha (test fermé), internal, beta ou production"
+        default: alpha
+
+permissions:
+  contents: write  # the GitHub release with the APK
+
+env:
+  GODOT_VERSION: 4.5.1
+  PACKAGE: com.donttrustyoureyes.game
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version name and code
+        run: |
+          name="${{ inputs.version }}"
+          name="${name:-${GITHUB_REF_NAME#v}}"
+          if ! [[ "$name" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            echo "::error::Version '$name' : il faut la forme 1.2.3 (tag v1.2.3)"
+            exit 1
+          fi
+          code=$(( BASH_REMATCH[1] * 10000 + BASH_REMATCH[2] * 100 + BASH_REMATCH[3] ))
+          sed -i -e "s/^version\/code=.*/version\/code=$code/" -e "s/^version\/name=.*/version\/name=\"$name\"/" export_presets.cfg
+          echo "VERSION_NAME=$name" >> "$GITHUB_ENV"
+          echo "Version $name (code $code)"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Android SDK (API 36)
+        run: |
+          sdkmanager="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$sdkmanager" --licenses > /dev/null
+          "$sdkmanager" "platforms;android-36" "build-tools;36.0.0" "platform-tools" > /dev/null
+
+      - name: Cache Godot and its export templates
+        uses: actions/cache@v4
+        with:
+          path: ~/godot-cache
+          key: godot-${{ env.GODOT_VERSION }}
+
+      - name: Install Godot and the export templates
+        run: |
+          base="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable"
+          mkdir -p ~/godot-cache
+          [ -f ~/godot-cache/godot.zip ] || curl -sSfL -o ~/godot-cache/godot.zip "$base/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          [ -f ~/godot-cache/templates.tpz ] || curl -sSfL -o ~/godot-cache/templates.tpz "$base/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          unzip -q ~/godot-cache/godot.zip -d "$RUNNER_TEMP"
+          mkdir -p "$HOME/bin"
+          mv "$RUNNER_TEMP/Godot_v${GODOT_VERSION}-stable_linux.x86_64" "$HOME/bin/godot"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+          templates="$HOME/.local/share/godot/export_templates/${GODOT_VERSION}.stable"
+          mkdir -p "$(dirname "$templates")"
+          unzip -q ~/godot-cache/templates.tpz -d "$RUNNER_TEMP/tpz"
+          mv "$RUNNER_TEMP/tpz/templates" "$templates"
+          mkdir -p ~/.config/godot
+          cat > ~/.config/godot/editor_settings-4.5.tres <<EOF
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/android_sdk_path = "$ANDROID_SDK_ROOT"
+          export/android/java_sdk_path = "$JAVA_HOME"
+          EOF
+
+      - name: Import the project
+        run: godot --headless --import
+
+      - name: Tests (nothing is published if one fails)
+        run: |
+          godot --headless -s tests/run_tests.gd
+          godot --headless -s tests/smoke_test.gd
+
+      - name: Upload key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::Secret ANDROID_KEYSTORE_BASE64 manquant (voir docs/PLAY_STORE.md)"
+            exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+
+      - name: Build the .aab (Google Play) and the APK (to share)
+        env:
+          GODOT_ANDROID_KEYSTORE_RELEASE_PATH: ${{ runner.temp }}/upload.jks
+          GODOT_ANDROID_KEYSTORE_RELEASE_USER: ${{ secrets.ANDROID_KEY_ALIAS }}
+          GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          GRADLE_OPTS: -Dorg.gradle.daemon=false
+        run: |
+          mkdir -p build
+          godot --headless --install-android-build-template --export-release "Android Play" build/dont-trust-your-eyes.aab
+          godot --headless --export-release "Android APK" build/DontTrustYourEyes.apk
+          test -s build/dont-trust-your-eyes.aab && test -s build/DontTrustYourEyes.apk
+          rm -f "$RUNNER_TEMP/upload.jks"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dont-trust-your-eyes-${{ env.VERSION_NAME }}
+          path: |
+            build/dont-trust-your-eyes.aab
+            build/DontTrustYourEyes.apk
+
+      - name: Send to Google Play
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: ${{ env.PACKAGE }}
+          releaseFiles: build/dont-trust-your-eyes.aab
+          releaseName: ${{ env.VERSION_NAME }}
+          track: ${{ inputs.track || 'alpha' }}
+          status: completed
+          whatsNewDirectory: distribution/whatsnew
+
+      - name: GitHub release with the APK
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Version ${{ env.VERSION_NAME }}
+          body_path: distribution/whatsnew/whatsnew-fr-FR
+          files: build/DontTrustYourEyes.apk

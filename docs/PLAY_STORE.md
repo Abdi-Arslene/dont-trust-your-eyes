@@ -67,16 +67,19 @@ Le script produit `build/dont-trust-your-eyes.aab` : le préréglage « Android 
 > • Des flaques de couleur qui mélangent les commandes
 > • Des escaliers qui tournent dès que tu ne les regardes pas
 > • Des petites maisons plus grandes dedans que dehors
+> • Un lac gelé où l'on glisse, des caisses à pousser, des boutons qui ouvrent des grilles
+> • Un sol qui s'effondre derrière toi : attention aux impasses !
+> • Des interrupteurs qui font bouger les murs
 > • Et des murs… qui ne disent pas toujours la vérité
 >
-> 22 NIVEAUX D'AVENTURE
-> Une histoire en 7 chapitres, du plus facile au plus malin. Chaque niveau se joue en une ou deux minutes.
+> 53 NIVEAUX D'AVENTURE
+> Une histoire en 15 chapitres, du plus facile au plus malin. Chaque niveau se joue en une ou deux minutes, et fait vraiment réfléchir.
 >
 > ENCORE PLUS DE JEU
 > • Défi du jour : un nouveau niveau chaque jour
 > • Rêves sans fin : des niveaux à l'infini, avec 3 cœurs
 > • Survie : chaque pas use ton énergie. Jusqu'où iras-tu ?
-> • 12 costumes rigolos à débloquer pour Pico
+> • 14 costumes rigolos à débloquer pour Pico
 >
 > FAIT POUR LES ENFANTS
 > • Pour les enfants à partir de 8 ans
@@ -97,12 +100,50 @@ Le script produit `build/dont-trust-your-eyes.aab` : le préréglage « Android 
 
 1. **Tests › Test fermé** : crée une liste de testeurs (les 12 adresses), puis « Créer une release ».
 2. Accepte la **signature d'application par Google Play** et envoie `build/dont-trust-your-eyes.aab`.
-3. Notes de version : « Première version : 22 niveaux, défi du jour, rêves sans fin, survie et 12 costumes. »
+3. Notes de version : « Première version : 53 niveaux, défi du jour, rêves sans fin, survie et 14 costumes. »
 4. Envoie la release en examen. Le premier examen prend de quelques jours à une semaine, parfois plus pour une app destinée aux enfants.
 5. Partage le lien d'inscription aux testeurs. Au bout de 14 jours avec 12 testeurs inscrits : **Tableau de bord › Demander l'accès à la production**.
 6. Une fois l'accès accordé, envoie la même release (ou une nouvelle) en **Production**.
 
-## 7. Avant d'envoyer (vérifications)
+## 7. Publication automatique (GitHub Actions)
+
+Deux pipelines sont dans [.github/workflows/](../.github/workflows/) :
+
+- **Tests** (`tests.yml`) : à chaque push sur `main`, les tests des règles et la partie complète de tous les niveaux.
+- **Publier sur Google Play** (`release.yml`) : à chaque tag `v1.2.3`, il teste le jeu, fabrique le `.aab` signé (version `1.2.3`, code `10203`) et l'APK, envoie le `.aab` sur la piste de **test fermé** (`alpha`), et joint l'APK à une release GitHub. Si un test échoue, rien n'est publié.
+
+### Mise en place (une seule fois)
+
+1. **Compte de service Google** (ce qui autorise GitHub à envoyer le jeu) :
+   1. Sur https://console.cloud.google.com, crée un projet, puis active l'API **Google Play Android Developer API**.
+   2. **IAM et administration › Comptes de service › Créer un compte de service** (aucun rôle n'est nécessaire). Dans le compte créé : **Clés › Ajouter une clé › JSON**. Un fichier `.json` se télécharge : c'est un secret, ne le mets jamais dans Git.
+   3. Dans la Play Console : **Utilisateurs et autorisations › Inviter un utilisateur**, avec l'adresse e-mail du compte de service (elle finit par `iam.gserviceaccount.com`). Dans **Autorisations de l'application**, ajoute *Don't Trust Your Eyes* avec les droits **Publier dans les canaux de test** et **Gérer les canaux de test et modifier les listes de testeurs** (plus **Publier en production** le jour où tu veux publier en production depuis le pipeline). L'accès peut mettre jusqu'à 24 h à s'activer.
+2. **Secrets GitHub** : sur GitHub, **Settings › Secrets and variables › Actions › New repository secret**, quatre secrets :
+
+   | Nom | Valeur |
+   |---|---|
+   | `PLAY_SERVICE_ACCOUNT_JSON` | tout le contenu du fichier `.json` du compte de service |
+   | `ANDROID_KEYSTORE_BASE64` | tout le contenu de `%USERPROFILE%\dtye-signing\upload.jks.b64` (la clé d'envoi, encodée) |
+   | `ANDROID_KEY_ALIAS` | `upload` |
+   | `ANDROID_KEYSTORE_PASSWORD` | le mot de passe écrit dans `%USERPROFILE%\dtye-signing\signing.env` |
+
+   Pour refaire le fichier encodé : `base64 -w0 upload.jks > upload.jks.b64` (Git Bash), dans le dossier de la clé.
+
+### Publier une nouvelle version
+
+1. Écris les nouveautés dans [distribution/whatsnew/whatsnew-fr-FR](../distribution/whatsnew/whatsnew-fr-FR) (500 caractères au plus).
+2. Choisis un numéro plus grand que le précédent, puis :
+   ```
+   git tag v1.1.0
+   git push origin v1.1.0
+   ```
+3. Suis l'avancement dans l'onglet **Actions** du dépôt GitHub. La nouvelle version arrive dans **Test fermé** de la Play Console, puis passe l'examen de Google.
+
+Pour une autre piste (`internal`, `beta`, `production`), lance le pipeline à la main : **Actions › Publier sur Google Play › Run workflow**, avec la version et la piste.
+
+Le numéro de version vient uniquement du tag : `export_presets.cfg` garde `1.0.0` pour les builds faits sur le PC. Tant que la toute première version n'a pas fini son examen chez Google, l'API peut refuser l'envoi (« only releases with status draft may be created on draft app ») : attends la fin de l'examen.
+
+## 8. Avant d'envoyer (vérifications)
 
 - [ ] L'e-mail de contact du développeur est renseigné dans la Play Console : la politique de confidentialité y renvoie.
 - [ ] Le build release a été installé et testé sur un vrai téléphone (le plus ancien possible).
